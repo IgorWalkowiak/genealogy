@@ -43,7 +43,7 @@ jobs:
 
       - name: Package and publish helm
         run: |
-          HELM_CHART_PATH="genealogy-helm-${{env.VERSION}}.tgz"
+          HELM_CHART_PATH="${{ env.image_name }}-${{env.VERSION}}.tgz"
           echo "HELM_CHART_PATH: $HELM_CHART_PATH"
           sed -i -e "s/0.0.1-SNAPSHOT/${{env.VERSION}}/" helm/Chart.yaml
           sed -i -e "s/tag: .*/tag: ${{env.VERSION}}/" helm/values.yaml
