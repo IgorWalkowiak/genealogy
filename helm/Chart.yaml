@@ -1,0 +1,7 @@
+apiVersion: v2
+name: genealogy
+description: A Helm chart for Genealogy application - family tree application
+type: application
+version: 0.0.1-SNAPSHOT
+appVersion: "0.0.1-SNAPSHOT"
+

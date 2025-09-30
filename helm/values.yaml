@@ -1,0 +1,110 @@
+replicaCount: 1
+
+image:
+  repository: femex/genealogy
+  pullPolicy: IfNotPresent
+  tag: 0.0.1-SNAPSHOT
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: genealogy.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 20
+  periodSeconds: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  APP_NAME: "Genealogy"
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_URL: "http://genealogy.local"
+  LOG_CHANNEL: "stack"
+  LOG_LEVEL: "info"
+  DB_CONNECTION: "mysql"
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  DB_DATABASE: "genealogy"
+  CACHE_DRIVER: "file"
+  SESSION_DRIVER: "file"
+  SESSION_LIFETIME: "120"
+  QUEUE_CONNECTION: "sync"
+
+secrets:
+  APP_KEY: ""
+  DB_USERNAME: "genealogy"
+  DB_PASSWORD: "secret"
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "root"
+    database: "genealogy"
+    username: "genealogy"
+    password: "secret"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
