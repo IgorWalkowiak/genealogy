@@ -49,6 +49,8 @@ jobs:
           platforms: linux/amd64
           provenance: false
           sbom: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Package and publish helm
         run: |
