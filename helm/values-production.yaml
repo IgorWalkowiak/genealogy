@@ -58,15 +58,10 @@ env:
   REDIS_PORT: "6379"
 
 secrets:
-  APP_KEY: ""  # Ustaw w sealed-secrets lub external-secrets
-  DB_USERNAME: ""  # Ustaw w sealed-secrets lub external-secrets
-  DB_PASSWORD: ""  # Ustaw w sealed-secrets lub external-secrets
+  APP_KEY: ""  
+  DB_USERNAME: "" 
+  DB_PASSWORD: ""
 
-# Wyłącz wbudowaną bazę danych MySQL
-mysql:
-  enabled: false
-
-# Persistent Volume dla storage Laravel
 volumes:
   - name: storage
     persistentVolumeClaim:
@@ -76,18 +71,15 @@ volumeMounts:
   - name: storage
     mountPath: /var/www/html/storage
 
-# Node selector dla dedykowanych node'ów
 nodeSelector:
   workload-type: web-application
 
-# Tolerations dla node taints
 tolerations:
   - key: "dedicated"
     operator: "Equal"
     value: "web"
     effect: "NoSchedule"
 
-# Anti-affinity dla rozproszonego deploymentu
 affinity:
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:

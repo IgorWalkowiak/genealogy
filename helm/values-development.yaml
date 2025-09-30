@@ -49,17 +49,3 @@ secrets:
   APP_KEY: "base64:dev-key-replace-me-in-production"
   DB_USERNAME: "genealogy"
   DB_PASSWORD: "dev-password"
-
-# Włącz wbudowaną bazę danych MySQL dla dewelopmentu
-mysql:
-  enabled: true
-  auth:
-    rootPassword: "root"
-    database: "genealogy"
-    username: "genealogy"
-    password: "dev-password"
-  primary:
-    persistence:
-      enabled: true
-      size: 2Gi
-
