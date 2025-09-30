@@ -95,16 +95,3 @@ secrets:
   APP_KEY: ""
   DB_USERNAME: "genealogy"
   DB_PASSWORD: "secret"
-
-mysql:
-  enabled: true
-  auth:
-    rootPassword: "root"
-    database: "genealogy"
-    username: "genealogy"
-    password: "secret"
-  primary:
-    persistence:
-      enabled: true
-      size: 8Gi
-
