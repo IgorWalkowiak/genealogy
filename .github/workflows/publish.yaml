@@ -54,11 +54,11 @@ jobs:
 
       - name: Package and publish helm
         run: |
-          HELM_CHART_PATH="${{ env.helm_chart_name }}-${{env.VERSION}}.tgz"
-          echo "HELM_CHART_PATH: $HELM_CHART_PATH"
           sed -i -e "s/0.0.1-SNAPSHOT/${{env.VERSION}}/" helm/Chart.yaml
           sed -i -e "s/tag: .*/tag: ${{env.VERSION}}/" helm/values.yaml
           helm package helm
+          HELM_CHART_PATH=$(ls *.tgz)
+          echo "HELM_CHART_PATH: $HELM_CHART_PATH"
           helm registry login registry-1.docker.io -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           helm push $HELM_CHART_PATH oci://registry-1.docker.io/${HELM_CHART_REPOSITORY}
 
