@@ -40,6 +40,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+            - name: http
+              containerPort: 8000
+              protocol: TCP
           env:
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
