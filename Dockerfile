@@ -46,8 +46,6 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN cp .env.example .env
-
 RUN mkdir -p /var/log/mysql /var/log/nginx /var/log/supervisor
 
 RUN chown -R www-data:www-data /var/www/html/storage \
