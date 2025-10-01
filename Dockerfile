@@ -70,6 +70,6 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-EXPOSE 80 3306
+EXPOSE 80 3306 
 
 CMD ["/usr/local/bin/start.sh"]
