@@ -38,9 +38,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
-              protocol: TCP
-            - name: httpsec
               containerPort: 8000
               protocol: TCP
           env:
