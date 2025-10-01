@@ -1,10 +1,5 @@
 FROM php:8.3-fpm
 
-ARG APP_ENV=production
-ARG APP_DEBUG=false
-ARG NODE_ENV=production
-
-
 RUN apt-get update && apt-get install -y \
     git \
     curl \
