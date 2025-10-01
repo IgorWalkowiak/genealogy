@@ -10,5 +10,5 @@ data:
     {{ $key }}={{ $value | quote }}
     {{- end }}
     {{- range $key, $value := .Values.secrets }}
-    {{ $key }}="${{ printf "${%s}" $key }}"
+    {{ $key }}="${{ printf "${%s}" $value }}"
     {{- end }}
