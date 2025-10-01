@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Running composer scripts..."
-composer install
+composer install --no-dev --optimize-autoloader --no-scripts
 
 php artisan key:generate --force
 
@@ -11,7 +11,7 @@ echo "Running migrations with seeders..."
 php artisan migrate:fresh --seed
 
 echo "Installing npm dependencies..."
-npm install
+npm install --include=dev
 
 echo "Building assets..."
 npm run build

@@ -48,14 +48,6 @@ COPY . .
 
 RUN cp .env.example .env
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-RUN npm install --include=dev
-
-RUN npm run build
-
-RUN composer dump-autoload --optimize --no-scripts
-
 RUN mkdir -p /var/log/mysql /var/log/nginx /var/log/supervisor
 
 RUN chown -R www-data:www-data /var/www/html/storage \
