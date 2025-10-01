@@ -3,12 +3,6 @@
 if [ -f "/tmp/env-config/.env" ]; then
     echo "Copying environment configuration from ConfigMap..."
     cp /tmp/env-config/.env /var/www/html/.env
-    
-    for var in APP_KEY DB_USERNAME DB_PASSWORD; do
-        if [ ! -z "${!var}" ]; then
-            sed -i "s|\${${var}}|${!var}|g" /var/www/html/.env
-        fi
-    done
 else
     echo "No ConfigMap, using .env.example..."
     cp .env.example .env
