@@ -57,10 +57,12 @@ livenessProbe:
   failureThreshold: 3
 
 readinessProbe:
-  httpGet:
-    path: /
-    port: 8000
-  initialDelaySeconds: 30
+  exec:
+    command:
+      - /bin/sh
+      - -c
+      - "php --help"
+  initialDelaySeconds: 60
   periodSeconds: 15
   timeoutSeconds: 10
   failureThreshold: 3
