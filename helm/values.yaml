@@ -25,7 +25,6 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
-  # nodePort: 30080  # Odkomentuj i ustaw dla type: NodePort
 
 ingress:
   enabled: false
