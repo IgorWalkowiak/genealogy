@@ -26,4 +26,4 @@ echo "Building assets..."
 npm run build
 
 echo "Running development server..."
-php artisan serve -vvv --port=80
+php artisan serve -vvv --port=80 --host=0.0.0.0
