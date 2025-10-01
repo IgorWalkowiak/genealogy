@@ -2,7 +2,7 @@
 echo "Running composer scripts..."
 composer install
 
-php artisan key:generate
+php artisan key:generate --force
 
 echo "Creating storage link..."
 php artisan storage:link
