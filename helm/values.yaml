@@ -25,6 +25,7 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+  # nodePort: 30080  # Odkomentuj i ustaw dla type: NodePort
 
 ingress:
   enabled: false
@@ -46,18 +47,26 @@ resources:
     memory: 512Mi
 
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - /bin/sh
+      - -c
+      - "php --help"
   initialDelaySeconds: 30
-  periodSeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
 
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 20
-  periodSeconds: 5
+  exec:
+    command:
+      - /bin/sh
+      - -c
+      - "php --help"
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 10
+  failureThreshold: 3
 
 autoscaling:
   enabled: false
