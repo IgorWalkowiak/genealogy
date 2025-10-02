@@ -30,11 +30,6 @@
                         <x-ts-icon icon="tabler.cake" class="inline-block size-5 mr-1" />
                         {{ __('birthday.birthdays') }}
                     </x-nav-link>
-
-                    <x-nav-link href="{{ route('help') }}" :active="request()->routeIs('help')">
-                        <x-ts-icon icon="tabler.help" class="inline-block size-5 mr-1" />
-                        {{ __('app.help') }}
-                    </x-nav-link>
                 </div>
             </div>
         </div>

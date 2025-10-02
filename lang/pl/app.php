@@ -32,7 +32,7 @@ return [
     'nothing_available' => 'Nic dostępnego',
     'nothing_found'     => 'Niczego nie znaleziono',
     'nothing_recorded'  => 'Jeszcze nic nie zapisano.',
-    'search'            => 'Szukaj',
+    'search'            => 'Przeglądaj',
     'yes'               => 'Tak',
     'no'                => 'Nie',
     'error'             => 'Błąd',
