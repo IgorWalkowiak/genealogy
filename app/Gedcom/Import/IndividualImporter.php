@@ -18,11 +18,14 @@ class IndividualImporter
 {
     private Team $team;
 
+    private MediaImporter $mediaImporter;
+
     private array $personMap = [];
 
-    public function __construct(Team $team)
+    public function __construct(Team $team, MediaImporter $mediaImporter)
     {
-        $this->team = $team;
+        $this->team          = $team;
+        $this->mediaImporter = $mediaImporter;
     }
 
     /**
@@ -68,6 +71,9 @@ class IndividualImporter
                     ]);
                 }
             }
+
+            // Import media files for this person
+            $this->mediaImporter->importForPerson($person, $individual);
         }
 
         return $this->personMap;

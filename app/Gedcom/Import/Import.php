@@ -10,8 +10,10 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Jetstream\Contracts\CreatesTeams;
 use Laravel\Jetstream\Events\AddingTeam;
+use ZipArchive;
 
 /**
  * Main GEDCOM Import orchestrator class
@@ -30,6 +32,10 @@ final class Import implements CreatesTeams
 
     private CoupleCreator $coupleCreator;
 
+    private MediaImporter $mediaImporter;
+
+    private ?string $tempExtractionPath = null;
+
     /**
      * Initialize with user and create a new team
      */
@@ -42,15 +48,16 @@ final class Import implements CreatesTeams
 
         // Initialize sub-components
         $this->parser             = new GedcomParser();
-        $this->individualImporter = new IndividualImporter($this->team);
+        $this->mediaImporter      = new MediaImporter();
+        $this->individualImporter = new IndividualImporter($this->team, $this->mediaImporter);
         $this->familyImporter     = new FamilyImporter($this->team);
         $this->coupleCreator      = new CoupleCreator($this->team);
     }
 
     /**
-     * Import GEDCOM file content
+     * Import GEDCOM file from path (.ged or .gdz)
      */
-    public function import(string $gedcomContent): array
+    public function import(string $filePath): array
     {
         // At the start of your import method, increase time and memory limits
         ini_set('max_execution_time', 300); // 5 minutes
@@ -59,43 +66,58 @@ final class Import implements CreatesTeams
         try {
             DB::beginTransaction();
 
+            // Determine file type and extract if necessary
+            $gedcomContent = $this->prepareGedcomFile($filePath);
+
             // Parse GEDCOM content
             $parsedData = $this->parser->parse($gedcomContent);
 
-            Log::info('GEDCOM IMPORT: parseGedcom', ['gedcomData' => $parsedData->getGedcomData()]);
+            Log::info('GEDCOM IMPORT: parseGedcom', [
+                'gedcomData'          => $parsedData->getGedcomData(),
+                'media_objects_count' => count($parsedData->getMediaObjects()),
+            ]);
 
-            // Import individuals first
+            // Import individuals first (with media)
             $personMap = $this->individualImporter->import($parsedData->getIndividuals());
 
             Log::info('GEDCOM IMPORT: importIndividuals', [
-                'individuals' => $parsedData->getIndividuals(),
-                'personMap'   => $personMap,
+                'individuals'      => count($parsedData->getIndividuals()),
+                'personMap'        => count($personMap),
+                'media_statistics' => $this->mediaImporter->getStatistics(),
             ]);
 
             // Import families and relationships
             $familyMap = $this->familyImporter->import($parsedData->getFamilies(), $personMap);
 
             Log::info('GEDCOM IMPORT: importFamilies', [
-                'families'  => $parsedData->getFamilies(),
-                'familyMap' => $familyMap,
+                'families'  => count($parsedData->getFamilies()),
+                'familyMap' => count($familyMap),
             ]);
 
             // Create couples from families
             $this->coupleCreator->create($familyMap, $personMap);
 
-            Log::info('GEDCOM IMPORT: createCouples', ['data' => '????']);
+            Log::info('GEDCOM IMPORT: createCouples');
 
             DB::commit();
+
+            // Cleanup temporary files
+            $this->cleanup();
+
+            $mediaStats = $this->mediaImporter->getStatistics();
 
             return [
                 'success'              => true,
                 'team'                 => $this->team->name,
                 'individuals_imported' => count($personMap),
                 'families_imported'    => count($familyMap),
+                'photos_imported'      => $mediaStats['imported'],
+                'photos_skipped'       => $mediaStats['skipped'],
                 'message'              => 'GEDCOM file imported successfully',
             ];
         } catch (Exception $e) {
             DB::rollBack();
+            $this->cleanup(); // Clean up even on error
             Log::error('GEDCOM Import Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
             return [
@@ -103,6 +125,131 @@ final class Import implements CreatesTeams
                 'error'   => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Prepare GEDCOM file - extract .gdz if needed, return GEDCOM content
+     */
+    private function prepareGedcomFile(string $filePath): string
+    {
+        $extension = Str::lower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        // Handle .ged files directly
+        if ($extension === 'ged') {
+            Log::info('GEDCOM IMPORT: Processing .ged file', ['path' => $filePath]);
+            return file_get_contents($filePath);
+        }
+
+        // Handle .gdz (ZIP) files
+        if ($extension === 'gdz' || $extension === 'zip') {
+            Log::info('GEDCOM IMPORT: Processing .gdz archive', ['path' => $filePath]);
+            return $this->extractGdzArchive($filePath);
+        }
+
+        throw new Exception("Unsupported file format: {$extension}. Only .ged and .gdz files are supported.");
+    }
+
+    /**
+     * Extract .gdz (ZIP) archive and return GEDCOM content
+     */
+    private function extractGdzArchive(string $zipPath): string
+    {
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath) !== true) {
+            throw new Exception('Failed to open GEDCOM archive (.gdz file)');
+        }
+
+        // Create temporary extraction directory
+        $this->tempExtractionPath = storage_path('app/temp/gedcom_import_' . uniqid());
+        if (! mkdir($this->tempExtractionPath, 0755, true)) {
+            throw new Exception('Failed to create temporary extraction directory');
+        }
+
+        // Extract all files
+        if (! $zip->extractTo($this->tempExtractionPath)) {
+            $zip->close();
+            throw new Exception('Failed to extract GEDCOM archive');
+        }
+
+        $zip->close();
+
+        // Find the .ged file in the extracted content
+        $gedcomFile = $this->findGedcomFile($this->tempExtractionPath);
+
+        if (! $gedcomFile) {
+            throw new Exception('No .ged file found in the archive');
+        }
+
+        Log::info('GEDCOM IMPORT: Archive extracted', [
+            'temp_path'    => $this->tempExtractionPath,
+            'gedcom_file'  => $gedcomFile,
+        ]);
+
+        // Set media path for MediaImporter
+        $this->mediaImporter->setTempMediaPath($this->tempExtractionPath);
+
+        // Read and return GEDCOM content
+        return file_get_contents($gedcomFile);
+    }
+
+    /**
+     * Recursively find .ged file in directory
+     */
+    private function findGedcomFile(string $directory): ?string
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && Str::lower($file->getExtension()) === 'ged') {
+                return $file->getPathname();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Cleanup temporary extraction directory
+     */
+    private function cleanup(): void
+    {
+        if ($this->tempExtractionPath && is_dir($this->tempExtractionPath)) {
+            Log::info('GEDCOM IMPORT: Cleaning up temporary files', [
+                'path' => $this->tempExtractionPath,
+            ]);
+
+            $this->deleteDirectory($this->tempExtractionPath);
+            $this->tempExtractionPath = null;
+        }
+    }
+
+    /**
+     * Recursively delete directory
+     */
+    private function deleteDirectory(string $dir): bool
+    {
+        if (! is_dir($dir)) {
+            return false;
+        }
+
+        $items = scandir($dir);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                $this->deleteDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        return rmdir($dir);
     }
 
     /**

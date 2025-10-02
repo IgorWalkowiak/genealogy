@@ -40,11 +40,16 @@ final class Importteam extends Component
         $this->validate();
 
         try {
-            $content = $this->file->get();
+            // Get the path to the uploaded file
+            $filePath = $this->file->getRealPath();
+            $extension = strtolower($this->file->getClientOriginalExtension());
 
-            // Scan for potentially malicious content
-            if ($this->containsMaliciousContent($content)) {
-                throw new Exception('File contains potentially dangerous content.');
+            // Scan for potentially malicious content (only for .ged text files, not .gdz archives)
+            if ($extension === 'ged') {
+                $content = $this->file->get();
+                if ($this->containsMaliciousContent($content)) {
+                    throw new Exception('File contains potentially dangerous content.');
+                }
             }
 
             $importer = new Import(
@@ -52,10 +57,16 @@ final class Importteam extends Component
                 $this->description,
             );
 
-            $result = $importer->import($content);
+            $result = $importer->import($filePath);
 
             if ($result['success']) {
-                $this->toast()->success('Success', "Imported {$result['individuals_imported']} individuals and {$result['families_imported']} families into {$result['team']}.")->send();
+                $message = "Imported {$result['individuals_imported']} individuals and {$result['families_imported']} families";
+                if (isset($result['photos_imported']) && $result['photos_imported'] > 0) {
+                    $message .= " with {$result['photos_imported']} photos";
+                }
+                $message .= " into {$result['team']}.";
+
+                $this->toast()->success('Success', $message)->send();
 
                 $this->redirect('/search');
             } else {
@@ -88,7 +99,7 @@ final class Importteam extends Component
         return $rules = [
             'name'        => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
-            'file'        => ['required', 'file'],
+            'file'        => ['required', 'file', 'mimes:ged,gdz,zip'],
         ];
     }
 
@@ -97,6 +108,7 @@ final class Importteam extends Component
         return [
             'file.required' => ('validation.required'),
             'file.file'     => ('validation.required'),
+            'file.mimes'    => 'The file must be a GEDCOM file (.ged or .gdz)',
         ];
     }
 

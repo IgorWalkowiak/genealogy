@@ -23,9 +23,10 @@ class GedcomParser
      */
     public function parse(string $content): GedcomData
     {
-        $gedcomData  = [];
-        $individuals = [];
-        $families    = [];
+        $gedcomData   = [];
+        $individuals  = [];
+        $families     = [];
+        $mediaObjects = [];
 
         $lines         = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
         $currentRecord = null;
@@ -81,8 +82,16 @@ class GedcomParser
                             ];
                             $currentRecord   = &$families[$id];
                             $currentRecordId = $id;
+                        } elseif ($tag === 'OBJE') {
+                            $mediaObjects[$id] = [
+                                'id'   => $id,
+                                'type' => 'OBJE',
+                                'data' => [],
+                            ];
+                            $currentRecord   = &$mediaObjects[$id];
+                            $currentRecordId = $id;
                         } else {
-                            // Other ID records (SOUR, OBJE, etc.)
+                            // Other ID records (SOUR, etc.)
                             $currentRecord   = null;
                             $currentRecordId = null;
                         }
@@ -135,15 +144,16 @@ class GedcomParser
 
         // Debug logging to help identify the issue
         Log::info('GEDCOM Parse Complete', [
-            'individuals_count' => count($individuals),
-            'families_count'    => count($families),
-            'families_keys'     => array_keys($families),
+            'individuals_count'   => count($individuals),
+            'families_count'      => count($families),
+            'media_objects_count' => count($mediaObjects),
         ]);
 
         // Set parsed data
         $this->parsedData->setGedcomData($gedcomData);
         $this->parsedData->setIndividuals($individuals);
         $this->parsedData->setFamilies($families);
+        $this->parsedData->setMediaObjects($mediaObjects);
 
         return $this->parsedData;
     }

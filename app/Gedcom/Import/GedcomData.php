@@ -15,6 +15,8 @@ class GedcomData
 
     private array $families = [];
 
+    private array $mediaObjects = [];
+
     public function setGedcomData(array $gedcomData): void
     {
         $this->gedcomData = $gedcomData;
@@ -30,6 +32,11 @@ class GedcomData
         $this->families = $families;
     }
 
+    public function setMediaObjects(array $mediaObjects): void
+    {
+        $this->mediaObjects = $mediaObjects;
+    }
+
     public function getGedcomData(): array
     {
         return $this->gedcomData;
@@ -43,5 +50,10 @@ class GedcomData
     public function getFamilies(): array
     {
         return $this->families;
+    }
+
+    public function getMediaObjects(): array
+    {
+        return $this->mediaObjects;
     }
 }
