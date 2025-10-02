@@ -71,7 +71,7 @@ return [
         // files
         'files' => [
             'driver'     => 'local',
-            'root'       => storage_path('app/public/files'),
+            'root'       => env('STORAGE_PUBLIC_PATH', storage_path('app/public')) . '/files',
             'url'        => env('APP_URL') . '/storage/files',
             'visibility' => 'public',
             'throw'      => false,
@@ -80,7 +80,7 @@ return [
         // photos
         'photos' => [
             'driver'     => 'local',
-            'root'       => storage_path('app/public/photos'),
+            'root'       => env('STORAGE_PUBLIC_PATH', storage_path('app/public')) . '/photos',
             'url'        => env('APP_URL') . '/storage/photos',
             'visibility' => 'public',
             'throw'      => false,
@@ -89,7 +89,7 @@ return [
         // profile-pictures
         'profiles' => [
             'driver'     => 'local',
-            'root'       => storage_path('app/public/profiles'),
+            'root'       => env('STORAGE_PUBLIC_PATH', storage_path('app/public')) . '/profiles',
             'url'        => env('APP_URL') . '/storage/profiles',
             'visibility' => 'public',
             'throw'      => false,
