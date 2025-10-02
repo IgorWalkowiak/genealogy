@@ -73,6 +73,14 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  mountPath: /mnt/persist-storage
+  annotations: {}
+
 volumes: []
 
 volumeMounts: []
