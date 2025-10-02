@@ -3,22 +3,22 @@
 declare(strict_types=1);
 
 return [
-    'couple'  => 'Couple',
-    'couples' => 'Couples',
+    'couple'  => 'Relacja',
+    'couples' => 'Relacje',
 
-    'date_end'   => 'End date',
-    'date_start' => 'Start date',
+    'date_end'   => 'Data zakończenia',
+    'date_start' => 'Data rozpoczęcia',
 
-    'has_ended' => 'Ended',
+    'has_ended' => 'Zakończono',
 
-    'is_married' => 'Marriage',
+    'is_married' => 'Małżeństwo',
 
     'partner'    => 'Partner',
-    'person1_id' => 'First person',
-    'person2_id' => 'Second person',
+    'person1_id' => 'Pierwsza osoba',
+    'person2_id' => 'Druga osoba',
 
-    'team_id' => 'Team',
+    'team_id' => 'Zespół',
 
-    'overlap'              => 'Relationship overlap detected!',
-    'required_if_date_end' => 'The relationship must be marked as ended when an end date is set.',
+    'overlap'              => 'Wykryto nakładanie się relacji!',
+    'required_if_date_end' => 'Relacja musi być oznaczona jako zakończona, gdy ustawiono datę zakończenia.',
 ];

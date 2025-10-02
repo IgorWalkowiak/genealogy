@@ -15,74 +15,74 @@ return [
     |
     */
 
-    'agree'              => 'I agree to the :terms_of_service and :privacy_policy',
-    'already_registered' => 'Already registered',
+    'agree'              => 'Zgadzam się z :terms_of_service i :privacy_policy',
+    'already_registered' => 'Masz już konto',
 
-    'back' => 'Back',
+    'back' => 'Powrót',
 
-    'change_password'         => 'Change Password',
-    'change_password_success' => 'Your password has changed',
-    'change_password_error'   => 'Uh-oh, change password failed',
+    'change_password'         => 'Zmień hasło',
+    'change_password_success' => 'Twoje hasło zostało zmienione',
+    'change_password_error'   => 'Ups, nie udało się zmienić hasła',
 
-    'developer' => 'Developer',
+    'developer' => 'Deweloper',
 
-    'email' => 'Email',
+    'email' => 'E-mail',
 
-    'failed'                    => 'These credentials do not match our records.',
-    'forgot_password'           => 'Forgot Password?',
-    'forgot_password_message'   => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
-    'email_password_reset_link' => 'Send Link',
+    'failed'                    => 'Podane dane nie pasują do naszych rekordów.',
+    'forgot_password'           => 'Nie pamiętasz hasła?',
+    'forgot_password_message'   => 'Nie pamiętasz hasła? Żaden problem. Podaj swój adres e-mail, a wyślemy Ci link do resetu hasła, który pozwoli ustawić nowe.',
+    'email_password_reset_link' => 'Wyślij link',
 
-    'guest' => 'Guest',
+    'guest' => 'Gość',
 
-    'have_an_account' => 'I have an Account',
+    'have_an_account' => 'Mam konto',
 
-    'invitation_accepted' => 'Great! You have accepted the invitation to join team :team.',
+    'invitation_accepted' => 'Świetnie! Przyjęto zaproszenie do zespołu :team.',
 
-    'login'  => 'Login',
-    'logout' => 'Logout',
+    'login'  => 'Zaloguj się',
+    'logout' => 'Wyloguj',
 
-    'need_account'              => 'Need an Account?',
-    'new_password'              => 'New Password',
-    'new_password_confirmation' => 'Confirm New Password',
+    'need_account'              => 'Potrzebujesz konta?',
+    'new_password'              => 'Nowe hasło',
+    'new_password_confirmation' => 'Potwierdź nowe hasło',
 
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'throttle' => 'Zbyt wiele prób logowania. Spróbuj ponownie za :seconds sekund.',
 
-    'old_password' => 'Old Password',
-    'or'           => 'or',
+    'old_password' => 'Stare hasło',
+    'or'           => 'lub',
 
-    'password'              => 'Password',
-    'password_confirmation' => 'Repeat Password',
-    'permissions'           => 'Permisssions',
+    'password'              => 'Hasło',
+    'password_confirmation' => 'Powtórz hasło',
+    'permissions'           => 'Uprawnienia',
 
-    'register'       => 'Register',
-    'remember_me'    => 'Remember me',
-    'reset_password' => 'Reset Password',
-    'role'           => 'Role',
+    'register'       => 'Zarejestruj się',
+    'remember_me'    => 'Zapamiętaj mnie',
+    'reset_password' => 'Resetuj hasło',
+    'role'           => 'Rola',
 
-    'send_reset_password_link' => 'Send Reset Password Link',
+    'send_reset_password_link' => 'Wyślij link resetujący hasło',
 
-    'team'    => 'team',
-    'to_join' => 'to join',
+    'team'    => 'zespół',
+    'to_join' => 'aby dołączyć',
 
     '2fa'                       => '2FA',
-    '2_factor_authentification' => 'Two Factor Authentifacation',
-    'confirm_code'              => 'Please confirm access to your account by entering the authentication code provided by your authenticator application.',
-    'confirm_recovery_code'     => 'Please confirm access to your account by entering one of your emergency recovery codes.',
-    'code'                      => 'Code',
-    'recovery_code'             => 'Recovery Code',
-    'use_recovery_code'         => 'Use a recovery code',
-    'use_authentification_code' => 'Use an authentication code',
+    '2_factor_authentification' => 'Uwierzytelnianie dwuskładnikowe',
+    'confirm_code'              => 'Potwierdź dostęp do swojego konta, wpisując kod uwierzytelniający z aplikacji uwierzytelniającej.',
+    'confirm_recovery_code'     => 'Potwierdź dostęp do konta, wpisując jeden z awaryjnych kodów odzyskiwania.',
+    'code'                      => 'Kod',
+    'recovery_code'             => 'Kod odzyskiwania',
+    'use_recovery_code'         => 'Użyj kodu odzyskiwania',
+    'use_authentification_code' => 'Użyj kodu uwierzytelniającego',
 
-    'confirm_password'         => 'Confirm Password',
-    'confirm_password_message' => 'For your security, please confirm your password to continue.',
-    'secure_area'              => 'This is a secure area of the application. Please confirm your password before continuing.',
-    'cancel'                   => 'Cancel',
-    'confirm'                  => 'Confirm',
+    'confirm_password'         => 'Potwierdź hasło',
+    'confirm_password_message' => 'Ze względów bezpieczeństwa potwierdź swoje hasło, aby kontynuować.',
+    'secure_area'              => 'To jest chroniona część aplikacji. Potwierdź swoje hasło przed kontynuacją.',
+    'cancel'                   => 'Anuluj',
+    'confirm'                  => 'Potwierdź',
 
-    'verify_email' => 'Before continuing, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.',
-    'link_send'    => 'A new verification link has been sent to the email address you provided in your profile settings.',
-    'resend'       => 'Resend Verification Email',
-    'edit_profile' => 'Edit Profile',
+    'verify_email' => 'Zanim przejdziesz dalej, zweryfikuj adres e-mail, klikając link, który właśnie wysłaliśmy. Jeśli nie otrzymałeś wiadomości, wyślemy kolejną.',
+    'link_send'    => 'Nowy link weryfikacyjny został wysłany na adres e‑mail podany w ustawieniach profilu.',
+    'resend'       => 'Wyślij ponownie e‑mail weryfikacyjny',
+    'edit_profile' => 'Edytuj profil',
 
 ];
