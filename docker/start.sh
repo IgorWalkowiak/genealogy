@@ -17,7 +17,7 @@ echo "Creating storage link..."
 php artisan storage:link
 
 echo "Running migrations with seeders..."
-php artisan migrate:fresh --seed
+php artisan migrate
 
 echo "Installing npm dependencies..."
 npm install --include=dev
