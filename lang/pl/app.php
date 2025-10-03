@@ -66,6 +66,7 @@ return [
     'show_family_chart' => 'Pokaż drzewo genealogiczne',
     'show_profile'      => 'Pokaż profil',
 
+    'edit'   => 'Edytuj',
     'save'   => 'Zapisz',
     'saved'  => 'Zapisano',
     'select' => 'Wybierz',

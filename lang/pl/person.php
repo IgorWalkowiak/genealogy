@@ -16,10 +16,11 @@ return [
     'partner'  => 'Partner',
     'partners' => 'Partnerzy',
 
-    'children'      => 'Dzieci',
-    'parents'       => 'Rodzice',
-    'grandchildren' => 'Wnuki',
-    'siblings'      => 'Rodzeństwo',
+    'children'         => 'Dzieci',
+    'current_children' => 'Aktualne dzieci',
+    'parents'          => 'Rodzice',
+    'grandchildren'    => 'Wnuki',
+    'siblings'         => 'Rodzeństwo',
     'ancestors'     => 'Przodkowie',
     'descendants'   => 'Potomkowie',
     'birth'         => 'Urodzenie',
@@ -162,6 +163,7 @@ return [
     'new_person_linked_as_mother'       => 'Nowa osoba połączona jako matka.',
     'existing_person_linked_as_child'   => 'Istniejąca osoba połączona jako dziecko.',
     'new_person_linked_as_child'        => 'Nowa osoba połączona jako dziecko.',
+    'children_linked'                   => '{1} :count osoba połączona jako dziecko.|[2,4] :count osoby połączone jako dzieci.|[5,*] :count osób połączonych jako dzieci.',
     'existing_person_linked_as_partner' => 'Istniejąca osoba połączona jako partner.',
     'new_person_linked_as_parther'      => 'Nowa osoba połączona jako partner.',
 
