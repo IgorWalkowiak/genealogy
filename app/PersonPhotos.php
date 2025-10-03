@@ -380,7 +380,7 @@ final class PersonPhotos
 
                 $this->photosDisk->put(
                     $path,
-                    $image->toWebp(quality: $this->uploadConfig['quality'] ?? 80)
+                    $image->toWebp(quality: $this->uploadConfig['quality'] ?? 100)
                 );
 
                 $savedAny = true;

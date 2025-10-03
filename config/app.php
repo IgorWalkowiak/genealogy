@@ -157,7 +157,7 @@ return [
     'upload_photo' => [
         'max_width'     => 1920,
         'max_height'    => 1080,
-        'quality'       => 85,
+        'quality'       => 100,
         'add_watermark' => env('PHOTOS_ADD_WATERMARK', false),
         'sizes'         => [
             'original' => [

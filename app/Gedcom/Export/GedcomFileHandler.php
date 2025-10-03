@@ -189,21 +189,21 @@ class GedcomFileHandler
             if (file_exists($diskPath) && is_readable($diskPath)) {
                 $filename = basename($mediaPath);
                 
-                // Convert WebP to JPG for GEDZIP format
+                // Convert WebP to PNG for GEDZIP format (lossless)
                 if (str_ends_with($filename, '.webp')) {
-                    $jpgFilename = str_replace('.webp', '.jpg', $filename);
-                    $tempJpgPath = $tempDir . DIRECTORY_SEPARATOR . $jpgFilename;
+                    $pngFilename = str_replace('.webp', '.png', $filename);
+                    $tempPngPath = $tempDir . DIRECTORY_SEPARATOR . $pngFilename;
                     
-                    if ($this->convertWebpToJpg($diskPath, $tempJpgPath)) {
-                        $archivePath = $mediaDir . $jpgFilename;
+                    if ($this->convertWebpToPng($diskPath, $tempPngPath)) {
+                        $archivePath = $mediaDir . $pngFilename;
                         
-                        if ($zip->addFile($tempJpgPath, $archivePath)) {
+                        if ($zip->addFile($tempPngPath, $archivePath)) {
                             $addedFiles++;
                         } else {
                             Log::warning("Failed to add converted media file to ZIP: {$mediaPath}");
                         }
                     } else {
-                        Log::warning("Failed to convert WebP to JPG: {$mediaPath}");
+                        Log::warning("Failed to convert WebP to PNG: {$mediaPath}");
                     }
                 } else {
                     $archivePath = $mediaDir . $filename;
@@ -223,14 +223,14 @@ class GedcomFileHandler
             throw new RuntimeException('Failed to close ZIP archive: ' . $zip->getStatusString());
         }
 
-        // Clean up temporary JPG files
+        // Clean up temporary PNG files
         foreach ($mediaFiles as $mediaPath) {
             $filename = basename($mediaPath);
             if (str_ends_with($filename, '.webp')) {
-                $jpgFilename = str_replace('.webp', '.jpg', $filename);
-                $tempJpgPath = $tempDir . DIRECTORY_SEPARATOR . $jpgFilename;
-                if (file_exists($tempJpgPath)) {
-                    @unlink($tempJpgPath);
+                $pngFilename = str_replace('.webp', '.png', $filename);
+                $tempPngPath = $tempDir . DIRECTORY_SEPARATOR . $pngFilename;
+                if (file_exists($tempPngPath)) {
+                    @unlink($tempPngPath);
                 }
             }
         }
@@ -411,13 +411,13 @@ class GedcomFileHandler
     // --------------------------------------------------------------------------------------
 
     /**
-     * Convert WebP image to JPG format.
+     * Convert WebP image to PNG format (lossless).
      *
      * @param  string  $sourcePath  Path to source WebP file
-     * @param  string  $destPath  Path to destination JPG file
+     * @param  string  $destPath  Path to destination PNG file
      * @return bool True if conversion successful, false otherwise
      */
-    private function convertWebpToJpg(string $sourcePath, string $destPath): bool
+    private function convertWebpToPng(string $sourcePath, string $destPath): bool
     {
         try {
             // Check if GD library supports WebP
@@ -433,18 +433,20 @@ class GedcomFileHandler
                 return false;
             }
 
-            $result = imagejpeg($image, $destPath, 100);
+            // Convert to PNG with maximum compression (9) but lossless
+            // PNG compression level: 0 (no compression) to 9 (max compression)
+            $result = imagepng($image, $destPath, 9);
             
             imagedestroy($image);
 
             if ($result === false) {
-                Log::error("Failed to save JPG image: {$destPath}");
+                Log::error("Failed to save PNG image: {$destPath}");
                 return false;
             }
 
             return true;
         } catch (Exception $e) {
-            Log::error("Error converting WebP to JPG: {$e->getMessage()}");
+            Log::error("Error converting WebP to PNG: {$e->getMessage()}");
             return false;
         }
     }
