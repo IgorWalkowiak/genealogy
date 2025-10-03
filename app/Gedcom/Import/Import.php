@@ -77,6 +77,9 @@ final class Import implements CreatesTeams
                 'media_objects_count' => count($parsedData->getMediaObjects()),
             ]);
 
+            // Pass media objects to MediaImporter for reference resolution
+            $this->mediaImporter->setMediaObjects($parsedData->getMediaObjects());
+
             // Import individuals first (with media)
             $personMap = $this->individualImporter->import($parsedData->getIndividuals());
 

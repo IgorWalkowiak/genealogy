@@ -22,12 +22,22 @@ class MediaImporter
 
     private int $skippedCount = 0;
 
+    private array $mediaObjects = [];
+
     /**
      * Set the temporary path where media files are extracted
      */
     public function setTempMediaPath(?string $path): void
     {
         $this->tempMediaPath = $path;
+    }
+
+    /**
+     * Set the media objects array from GEDCOM parsing
+     */
+    public function setMediaObjects(array $mediaObjects): void
+    {
+        $this->mediaObjects = $mediaObjects;
     }
 
     /**
@@ -124,11 +134,16 @@ class MediaImporter
 
             // Handle OBJE tag with reference to media object (e.g., @M1@)
             if ($field['tag'] === 'OBJE' && str_starts_with($field['value'] ?? '', '@')) {
-                // This would require resolving the media object reference
-                // For now, we'll skip these and only handle inline OBJE
-                Log::debug("GEDCOM Media Import: Skipping OBJE reference", [
-                    'reference' => $field['value'],
-                ]);
+                $mediaId = trim($field['value'], '@');
+                $resolvedMedia = $this->resolveMediaReference($mediaId);
+                
+                if ($resolvedMedia) {
+                    $mediaFiles[] = $resolvedMedia;
+                } else {
+                    Log::warning("GEDCOM Media Import: Could not resolve media reference", [
+                        'reference' => $field['value'],
+                    ]);
+                }
             }
         }
 
@@ -147,6 +162,43 @@ class MediaImporter
         }
 
         return null;
+    }
+
+    /**
+     * Resolve media reference (@M1@) to actual file information
+     */
+    private function resolveMediaReference(string $mediaId): ?array
+    {
+        if (!isset($this->mediaObjects[$mediaId])) {
+            return null;
+        }
+
+        $mediaObject = $this->mediaObjects[$mediaId];
+        
+        if (!isset($mediaObject['data'])) {
+            return null;
+        }
+
+        $file = null;
+        $title = null;
+
+        foreach ($mediaObject['data'] as $field) {
+            if ($field['tag'] === 'FILE') {
+                $file = $field['value'];
+            }
+            if ($field['tag'] === 'TITL') {
+                $title = $field['value'];
+            }
+        }
+
+        if (!$file) {
+            return null;
+        }
+
+        return [
+            'file'  => $file,
+            'title' => $title,
+        ];
     }
 
     /**
