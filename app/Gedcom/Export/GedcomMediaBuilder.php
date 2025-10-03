@@ -179,8 +179,8 @@ class GedcomMediaBuilder
             $mediaObjects[] = [
                 'id'             => $mediaId,
                 'filename'       => $image['filename'],
-                'file_reference' => $image['filename'] . '.webp',
-                'mime_type'      => 'image/webp',
+                'file_reference' => $image['filename'] . '.jpg',
+                'mime_type'      => 'image/jpeg',
                 'disk_path'      => $image['disk_path'],
                 'url'            => $image['url'],
                 'title'          => $this->generateImageTitle($image['filename']),

@@ -182,17 +182,37 @@ class GedcomFileHandler
         // Add media files
         $mediaDir   = 'media/';
         $addedFiles = 0;
+        $tempDir    = dirname($zipPath);
         foreach ($mediaFiles as $mediaPath) {
             $diskPath = Storage::disk('photos')->path($mediaPath);
 
             if (file_exists($diskPath) && is_readable($diskPath)) {
-                $filename    = basename($mediaPath);
-                $archivePath = $mediaDir . $filename;
-
-                if ($zip->addFile($diskPath, $archivePath)) {
-                    $addedFiles++;
+                $filename = basename($mediaPath);
+                
+                // Convert WebP to JPG for GEDZIP format
+                if (str_ends_with($filename, '.webp')) {
+                    $jpgFilename = str_replace('.webp', '.jpg', $filename);
+                    $tempJpgPath = $tempDir . DIRECTORY_SEPARATOR . $jpgFilename;
+                    
+                    if ($this->convertWebpToJpg($diskPath, $tempJpgPath)) {
+                        $archivePath = $mediaDir . $jpgFilename;
+                        
+                        if ($zip->addFile($tempJpgPath, $archivePath)) {
+                            $addedFiles++;
+                        } else {
+                            Log::warning("Failed to add converted media file to ZIP: {$mediaPath}");
+                        }
+                    } else {
+                        Log::warning("Failed to convert WebP to JPG: {$mediaPath}");
+                    }
                 } else {
-                    Log::warning("Failed to add media file to ZIP: {$mediaPath}");
+                    $archivePath = $mediaDir . $filename;
+                    
+                    if ($zip->addFile($diskPath, $archivePath)) {
+                        $addedFiles++;
+                    } else {
+                        Log::warning("Failed to add media file to ZIP: {$mediaPath}");
+                    }
                 }
             } else {
                 Log::warning("Media file not found or not readable: {$diskPath}");
@@ -201,6 +221,18 @@ class GedcomFileHandler
 
         if (! $zip->close()) {
             throw new RuntimeException('Failed to close ZIP archive: ' . $zip->getStatusString());
+        }
+
+        // Clean up temporary JPG files
+        foreach ($mediaFiles as $mediaPath) {
+            $filename = basename($mediaPath);
+            if (str_ends_with($filename, '.webp')) {
+                $jpgFilename = str_replace('.webp', '.jpg', $filename);
+                $tempJpgPath = $tempDir . DIRECTORY_SEPARATOR . $jpgFilename;
+                if (file_exists($tempJpgPath)) {
+                    @unlink($tempJpgPath);
+                }
+            }
         }
 
         // Verify the ZIP file was created and has content
@@ -377,6 +409,45 @@ class GedcomFileHandler
     // --------------------------------------------------------------------------------------
     // HELPER METHODS
     // --------------------------------------------------------------------------------------
+
+    /**
+     * Convert WebP image to JPG format.
+     *
+     * @param  string  $sourcePath  Path to source WebP file
+     * @param  string  $destPath  Path to destination JPG file
+     * @return bool True if conversion successful, false otherwise
+     */
+    private function convertWebpToJpg(string $sourcePath, string $destPath): bool
+    {
+        try {
+            // Check if GD library supports WebP
+            if (! function_exists('imagecreatefromwebp')) {
+                Log::error('GD library does not support WebP format');
+                return false;
+            }
+
+            // Load WebP image
+            $image = imagecreatefromwebp($sourcePath);
+            if ($image === false) {
+                Log::error("Failed to load WebP image: {$sourcePath}");
+                return false;
+            }
+
+            $result = imagejpeg($image, $destPath, 100);
+            
+            imagedestroy($image);
+
+            if ($result === false) {
+                Log::error("Failed to save JPG image: {$destPath}");
+                return false;
+            }
+
+            return true;
+        } catch (Exception $e) {
+            Log::error("Error converting WebP to JPG: {$e->getMessage()}");
+            return false;
+        }
+    }
 
     /**
      * Get human-readable error message for ZipArchive error codes.
