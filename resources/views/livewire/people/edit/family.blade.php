@@ -39,15 +39,7 @@
                         <p>{{ __('person.family_caution_1') }}</p>
 
                         <x-hr.narrow class="col-span-6" />
-
-                        <p>{{ __('person.family_caution_2') }}</p>
                     </x-ts-alert>
-                </div>
-
-                {{-- parents_id --}}
-                <div class="col-span-6">
-                    <x-ts-select.styled wire:model="parents_id" id="parents_id" label="{{ __('person.parents') }} :" :options="$parents" select="label:couple|value:id"
-                        placeholder="{{ __('app.select') }} ..." searchable />
                 </div>
             </div>
         </div>
