@@ -255,10 +255,10 @@ final class PersonPhotos
                 continue;
             }
 
-            // Extract index from filename: personId_index_timestamp.webp
+            // Extract index from filename: personId_index_timestamp.png (or .webp for old files)
             $parts = explode('_', $basename);
 
-            // We expect at least 3 parts: {personId}_{index}_{timestamp}.webp
+            // We expect at least 3 parts: {personId}_{index}_{timestamp}.ext
             if (count($parts) >= 3 && is_numeric($parts[1])) {
                 $maxIndex = max($maxIndex, (int) $parts[1]);
             }
@@ -270,6 +270,7 @@ final class PersonPhotos
     /**
      * Find a photo file for a specific index and size variant.
      * Uses cached file list and optimized pattern matching.
+     * Original files are PNG, thumbnails are WebP.
      *
      * @param  int  $index  The photo index to find
      * @param  string  $sizeKey  Size variant: 'original', 'small', 'medium'
@@ -289,7 +290,10 @@ final class PersonPhotos
 
             // Check size match
             if ($sizeKey === 'original') {
-                if (! str_contains($basename, '_medium.webp') && ! str_contains($basename, '_small.webp')) {
+                // Original can be either PNG (new format) or WebP (legacy)
+                if ((str_ends_with($basename, '.png') || str_ends_with($basename, '.webp'))
+                    && ! str_contains($basename, '_medium.webp') 
+                    && ! str_contains($basename, '_small.webp')) {
                     return $basename;
                 }
             } elseif (str_contains($basename, "_{$sizeKey}.webp")) {
@@ -338,7 +342,7 @@ final class PersonPhotos
 
     /**
      * Process image in each configured size and save to the photos disk.
-     * Creates all size variants (original, small, medium) with watermark if enabled.
+     * Original is saved as PNG (lossless, no scaling), thumbnails as WebP.
      *
      * @param  UploadedFile|string  $photo  The source photo
      * @param  int  $index  The photo index
@@ -368,20 +372,29 @@ final class PersonPhotos
             try {
                 $image = clone $original;
 
-                $image->scaleDown(
-                    width: $dimensions['width'],
-                    height: $dimensions['height']
-                );
+                if ($sizeKey === 'original') {
+                    $filename = $this->makeFilename($index, $timestamp, $sizeKey);
+                    $path     = $this->personPath . '/' . $filename;
 
-                $this->applyWatermark($image);
+                    $this->photosDisk->put(
+                        $path,
+                        $image->toPng() 
+                    );
+                } else {
+                    $image->scaleDown(
+                        width: $dimensions['width'],
+                        height: $dimensions['height']
+                    );
 
-                $filename = $this->makeFilename($index, $timestamp, $sizeKey);
-                $path     = $this->personPath . '/' . $filename;
 
-                $this->photosDisk->put(
-                    $path,
-                    $image->toWebp(quality: $this->uploadConfig['quality'] ?? 100)
-                );
+                    $filename = $this->makeFilename($index, $timestamp, $sizeKey);
+                    $path     = $this->personPath . '/' . $filename;
+
+                    $this->photosDisk->put(
+                        $path,
+                        $image->toWebp(quality: $this->uploadConfig['quality'] ?? 100)
+                    );
+                }
 
                 $savedAny = true;
             } catch (Throwable $e) {
@@ -401,12 +414,13 @@ final class PersonPhotos
     }
 
     /**
-     * Build filename using the naming convention: personId_index_timestamp[_size].webp
+     * Build filename using the naming convention: personId_index_timestamp[_size].ext
+     * Original files use .png extension, thumbnails use .webp
      *
      * @param  int  $index  The photo index (zero-padded to 3 digits)
      * @param  string  $timestamp  The timestamp string
      * @param  string  $sizeKey  Size variant: 'original', 'small', 'medium'
-     * @param  bool  $includeExtension  Whether to include .webp extension
+     * @param  bool  $includeExtension  Whether to include file extension
      * @return string The generated filename
      */
     private function makeFilename(int $index, string $timestamp, string $sizeKey, bool $includeExtension = true): string
@@ -422,7 +436,7 @@ final class PersonPhotos
         );
 
         if ($includeExtension) {
-            $filename .= '.webp';
+            $filename .= ($sizeKey === 'original') ? '.png' : '.webp';
         }
 
         return $filename;

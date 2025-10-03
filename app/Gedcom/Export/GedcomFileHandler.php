@@ -179,40 +179,20 @@ class GedcomFileHandler
             throw new RuntimeException('Failed to add GEDCOM file to ZIP archive: ' . $gedcomPath);
         }
 
-        // Add media files
+        // Add media files (already in PNG or WebP format)
         $mediaDir   = 'media/';
         $addedFiles = 0;
-        $tempDir    = dirname($zipPath);
         foreach ($mediaFiles as $mediaPath) {
             $diskPath = Storage::disk('photos')->path($mediaPath);
 
             if (file_exists($diskPath) && is_readable($diskPath)) {
-                $filename = basename($mediaPath);
-                
-                // Convert WebP to PNG for GEDZIP format (lossless)
-                if (str_ends_with($filename, '.webp')) {
-                    $pngFilename = str_replace('.webp', '.png', $filename);
-                    $tempPngPath = $tempDir . DIRECTORY_SEPARATOR . $pngFilename;
-                    
-                    if ($this->convertWebpToPng($diskPath, $tempPngPath)) {
-                        $archivePath = $mediaDir . $pngFilename;
-                        
-                        if ($zip->addFile($tempPngPath, $archivePath)) {
-                            $addedFiles++;
-                        } else {
-                            Log::warning("Failed to add converted media file to ZIP: {$mediaPath}");
-                        }
-                    } else {
-                        Log::warning("Failed to convert WebP to PNG: {$mediaPath}");
-                    }
+                $filename    = basename($mediaPath);
+                $archivePath = $mediaDir . $filename;
+
+                if ($zip->addFile($diskPath, $archivePath)) {
+                    $addedFiles++;
                 } else {
-                    $archivePath = $mediaDir . $filename;
-                    
-                    if ($zip->addFile($diskPath, $archivePath)) {
-                        $addedFiles++;
-                    } else {
-                        Log::warning("Failed to add media file to ZIP: {$mediaPath}");
-                    }
+                    Log::warning("Failed to add media file to ZIP: {$mediaPath}");
                 }
             } else {
                 Log::warning("Media file not found or not readable: {$diskPath}");
@@ -221,18 +201,6 @@ class GedcomFileHandler
 
         if (! $zip->close()) {
             throw new RuntimeException('Failed to close ZIP archive: ' . $zip->getStatusString());
-        }
-
-        // Clean up temporary PNG files
-        foreach ($mediaFiles as $mediaPath) {
-            $filename = basename($mediaPath);
-            if (str_ends_with($filename, '.webp')) {
-                $pngFilename = str_replace('.webp', '.png', $filename);
-                $tempPngPath = $tempDir . DIRECTORY_SEPARATOR . $pngFilename;
-                if (file_exists($tempPngPath)) {
-                    @unlink($tempPngPath);
-                }
-            }
         }
 
         // Verify the ZIP file was created and has content
@@ -409,47 +377,6 @@ class GedcomFileHandler
     // --------------------------------------------------------------------------------------
     // HELPER METHODS
     // --------------------------------------------------------------------------------------
-
-    /**
-     * Convert WebP image to PNG format (lossless).
-     *
-     * @param  string  $sourcePath  Path to source WebP file
-     * @param  string  $destPath  Path to destination PNG file
-     * @return bool True if conversion successful, false otherwise
-     */
-    private function convertWebpToPng(string $sourcePath, string $destPath): bool
-    {
-        try {
-            // Check if GD library supports WebP
-            if (! function_exists('imagecreatefromwebp')) {
-                Log::error('GD library does not support WebP format');
-                return false;
-            }
-
-            // Load WebP image
-            $image = imagecreatefromwebp($sourcePath);
-            if ($image === false) {
-                Log::error("Failed to load WebP image: {$sourcePath}");
-                return false;
-            }
-
-            // Convert to PNG with maximum compression (9) but lossless
-            // PNG compression level: 0 (no compression) to 9 (max compression)
-            $result = imagepng($image, $destPath, 9);
-            
-            imagedestroy($image);
-
-            if ($result === false) {
-                Log::error("Failed to save PNG image: {$destPath}");
-                return false;
-            }
-
-            return true;
-        } catch (Exception $e) {
-            Log::error("Error converting WebP to PNG: {$e->getMessage()}");
-            return false;
-        }
-    }
 
     /**
      * Get human-readable error message for ZipArchive error codes.

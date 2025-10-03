@@ -137,7 +137,7 @@ class GedcomMediaBuilder
      * Get images for a specific person.
      *
      * Scans the person's photo directory and creates media object entries
-     * for all original WebP files, filtering out resized variants.
+     * for all original PNG files (or legacy WebP files), filtering out resized variants.
      *
      * @param  Person  $person  Person model instance
      * @return array<array> Array of media objects
@@ -153,18 +153,20 @@ class GedcomMediaBuilder
         $allFiles     = Storage::disk('photos')->files($directory);
         $mediaObjects = [];
 
-        // Get only original .webp files (not _medium.webp or _small.webp)
+        // Get only original files (PNG or legacy WebP, not _medium.webp or _small.webp)
         $images = collect($allFiles)
             ->filter(function ($file): bool {
-                return $this->isOriginalWebpFile($file);
+                return $this->isOriginalImageFile($file);
             })
             ->map(function ($originalFile): array {
                 // Extract filename without extension for database comparison
                 $filename           = basename($originalFile);
                 $filenameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
+                $extension          = pathinfo($filename, PATHINFO_EXTENSION);
 
                 return [
                     'filename'  => $filenameWithoutExt,
+                    'extension' => $extension,
                     'disk_path' => $originalFile, // For file system access
                     'url'       => Storage::disk('photos')->url($originalFile),
                 ];
@@ -179,8 +181,8 @@ class GedcomMediaBuilder
             $mediaObjects[] = [
                 'id'             => $mediaId,
                 'filename'       => $image['filename'],
-                'file_reference' => $image['filename'] . '.png',
-                'mime_type'      => 'image/png',
+                'file_reference' => $image['filename'] . '.' . $image['extension'],
+                'mime_type'      => $image['extension'] === 'png' ? 'image/png' : 'image/webp',
                 'disk_path'      => $image['disk_path'],
                 'url'            => $image['url'],
                 'title'          => $this->generateImageTitle($image['filename']),
@@ -191,21 +193,27 @@ class GedcomMediaBuilder
     }
 
     /**
-     * Check if file is an original .webp file (not a resized variant).
+     * Check if file is an original image file (not a resized variant).
      *
      * Filters out thumbnail and medium-sized variants to include only
      * original full-resolution images in the export.
+     * Accepts PNG (new format) and WebP (legacy format).
      *
      * @param  string  $file  File path
-     * @return bool True if original .webp file
+     * @return bool True if original image file
      */
-    private function isOriginalWebpFile(string $file): bool
+    private function isOriginalImageFile(string $file): bool
     {
         $filename = basename($file);
 
-        return str_ends_with($filename, '.webp')
-            && ! str_ends_with($filename, '_medium.webp')
-            && ! str_ends_with($filename, '_small.webp');
+        // Accept PNG (new format) or WebP (legacy format)
+        $isImageFile = str_ends_with($filename, '.png') || str_ends_with($filename, '.webp');
+        
+        // Exclude thumbnail variants
+        $isNotThumbnail = ! str_ends_with($filename, '_medium.webp') 
+                       && ! str_ends_with($filename, '_small.webp');
+
+        return $isImageFile && $isNotThumbnail;
     }
 
     /**
