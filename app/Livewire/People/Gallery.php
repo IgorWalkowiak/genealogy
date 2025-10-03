@@ -39,17 +39,26 @@ final class Gallery extends Component
         // Get all medium files and match them with originals
         $this->images = collect($allFiles)
             ->filter(fn ($file) => str_ends_with($file, '_medium.webp'))
-            ->map(function ($mediumFile) {
+            ->map(function ($mediumFile) use ($allFiles) {
                 // Extract the base filename (without _medium.webp)
-                $baseName     = basename($mediumFile);
-                $originalName = str_replace('_medium.webp', '.webp', $baseName);
-                $originalFile = str_replace($baseName, $originalName, $mediumFile);
-
-                // Extract filename without extension for database comparison
-                $filenameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+                $baseName           = basename($mediumFile);
+                $baseNameWithoutExt = str_replace('_medium.webp', '', $baseName);
+                
+                // Try to find PNG original first, fallback to WebP for legacy files
+                $pngOriginalName  = $baseNameWithoutExt . '.png';
+                $webpOriginalName = $baseNameWithoutExt . '.webp';
+                
+                $directory = "{$this->person->team_id}/{$this->person->id}";
+                
+                // Check if PNG original exists
+                $originalFile = $directory . '/' . $pngOriginalName;
+                if (! Storage::disk('photos')->exists($originalFile)) {
+                    // Fallback to WebP for legacy files
+                    $originalFile = $directory . '/' . $webpOriginalName;
+                }
 
                 return [
-                    'filename' => $filenameWithoutExt, // Store filename without extension for database comparison
+                    'filename' => $baseNameWithoutExt, // Store filename without extension for database comparison
                     'medium'   => Storage::disk('photos')->url($mediumFile),
                     'original' => Storage::disk('photos')->url($originalFile),
                 ];

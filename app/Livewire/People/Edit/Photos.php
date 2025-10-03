@@ -290,30 +290,40 @@ final class Photos extends Component
 
     /**
      * Delete photo files.
-     * Removes original, medium, and small versions.
+     * Removes original (PNG or WebP), medium, and small versions.
      */
     private function deletePhotoVariants(string $photo, int $teamId, int $personId): void
     {
-        $disk  = Storage::disk('photos');
-        $sizes = ['', '_medium', '_small']; // Original has no suffix, medium and small have suffixes
+        $disk = Storage::disk('photos');
+        
+        // For original: try both PNG and WebP
+        // For thumbnails: only WebP
+        $variants = [
+            ['suffix' => '', 'extensions' => ['png', 'webp']], // Original can be PNG or WebP
+            ['suffix' => '_medium', 'extensions' => ['webp']], // Thumbnails are always WebP
+            ['suffix' => '_small', 'extensions' => ['webp']],
+        ];
 
-        foreach ($sizes as $suffix) {
-            try {
-                $filename  = $photo . $suffix . '.webp';
-                $photoPath = "{$teamId}/{$personId}/{$filename}";
+        foreach ($variants as $variant) {
+            foreach ($variant['extensions'] as $ext) {
+                try {
+                    $filename  = $photo . $variant['suffix'] . '.' . $ext;
+                    $photoPath = "{$teamId}/{$personId}/{$filename}";
 
-                if ($disk->exists($photoPath)) {
-                    $disk->delete($photoPath);
+                    if ($disk->exists($photoPath)) {
+                        $disk->delete($photoPath);
+                    }
+                } catch (Exception $e) {
+                    Log::warning('Failed to delete photo from storage', [
+                        'photo'     => $photo,
+                        'team_id'   => $teamId,
+                        'person_id' => $personId,
+                        'suffix'    => $variant['suffix'],
+                        'extension' => $ext,
+                        'path'      => $photoPath ?? null,
+                        'error'     => $e->getMessage(),
+                    ]);
                 }
-            } catch (Exception $e) {
-                Log::warning('Failed to delete photo from storage', [
-                    'photo'     => $photo,
-                    'team_id'   => $teamId,
-                    'person_id' => $personId,
-                    'suffix'    => $suffix,
-                    'path'      => $photoPath ?? null,
-                    'error'     => $e->getMessage(),
-                ]);
             }
         }
     }
@@ -363,20 +373,26 @@ final class Photos extends Component
 
     /**
      * Check if a filename represents an original photo (not a sized version).
+     * Supports both PNG (new format) and WebP (legacy format).
      */
     private function isOriginalPhoto(string $basename): bool
     {
-        return str_ends_with($basename, '.webp') && ! str_contains($basename, '_medium.webp') && ! str_contains($basename, '_small.webp');
+        $isImageFile = str_ends_with($basename, '.png') || str_ends_with($basename, '.webp');
+        $isNotThumbnail = ! str_contains($basename, '_medium.webp') && ! str_contains($basename, '_small.webp');
+        
+        return $isImageFile && $isNotThumbnail;
     }
 
     /**
      * Check if a photo exists.
+     * Checks for both PNG (new format) and WebP (legacy format).
      */
     private function photoExists(string $photo): bool
     {
-        $disk      = Storage::disk('photos');
-        $photoPath = "{$this->person->team_id}/{$this->person->id}/{$photo}.webp";
-
-        return $disk->exists($photoPath);
+        $disk     = Storage::disk('photos');
+        $basePath = "{$this->person->team_id}/{$this->person->id}";
+        
+        // Check PNG first (new format), then WebP (legacy)
+        return $disk->exists("{$basePath}/{$photo}.png") || $disk->exists("{$basePath}/{$photo}.webp");
     }
 }

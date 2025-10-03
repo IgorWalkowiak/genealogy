@@ -270,7 +270,7 @@ final class PersonPhotos
     /**
      * Find a photo file for a specific index and size variant.
      * Uses cached file list and optimized pattern matching.
-     * Original files are PNG, thumbnails are WebP.
+     * Original files are PNG (preferred) or WebP (legacy).
      *
      * @param  int  $index  The photo index to find
      * @param  string  $sizeKey  Size variant: 'original', 'small', 'medium'
@@ -281,6 +281,37 @@ final class PersonPhotos
         $files        = $this->getPersonFiles();
         $indexPattern = sprintf('_%03d_', $index);
 
+        if ($sizeKey === 'original') {
+            // For original: prefer PNG over WebP
+            $pngFile  = null;
+            $webpFile = null;
+
+            foreach ($files as $file) {
+                $basename = basename($file);
+
+                if (! str_contains($basename, $indexPattern)) {
+                    continue;
+                }
+
+                // Check if it's an original file (not a thumbnail)
+                if (str_contains($basename, '_medium.webp') || str_contains($basename, '_small.webp')) {
+                    continue;
+                }
+
+                // Collect PNG and WebP originals
+                if (str_ends_with($basename, '.png')) {
+                    $pngFile = $basename;
+                    break; // PNG found, no need to continue
+                } elseif (str_ends_with($basename, '.webp')) {
+                    $webpFile = $basename;
+                }
+            }
+
+            // Prefer PNG, fallback to WebP for legacy files
+            return $pngFile ?? $webpFile;
+        }
+
+        // For thumbnails (small, medium)
         foreach ($files as $file) {
             $basename = basename($file);
 
@@ -288,15 +319,7 @@ final class PersonPhotos
                 continue;
             }
 
-            // Check size match
-            if ($sizeKey === 'original') {
-                // Original can be either PNG (new format) or WebP (legacy)
-                if ((str_ends_with($basename, '.png') || str_ends_with($basename, '.webp'))
-                    && ! str_contains($basename, '_medium.webp') 
-                    && ! str_contains($basename, '_small.webp')) {
-                    return $basename;
-                }
-            } elseif (str_contains($basename, "_{$sizeKey}.webp")) {
+            if (str_contains($basename, "_{$sizeKey}.webp")) {
                 return $basename;
             }
         }
@@ -320,7 +343,7 @@ final class PersonPhotos
             $success = $this->processAndSaveImage($photo, $index, $timestamp);
 
             if ($success && empty($this->person->photo)) {
-                // Save the original filename for reference
+                // Save the original filename without extension (for backward compatibility)
                 $this->person->update([
                     'photo' => $this->makeFilename($index, $timestamp, 'original', false),
                 ]);
