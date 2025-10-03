@@ -6,31 +6,18 @@
             </div>
 
             @if (auth()->user()->hasPermission('person:update') or auth()->user()->hasPermission('person:delete'))
-                <div class="flex-1 grow min-w-max max-w-min text-end">
+                <div class="flex gap-2 flex-1 grow min-w-max max-w-min text-end">
+                    @if (auth()->user()->hasPermission('person:update'))
+                        <a href="/people/{{ $person->id }}/edit">
+                            <x-ts-button color="primary" class="px-3 py-2">
+                                <x-ts-icon icon="tabler.edit" class="inline-block size-5 mr-1" />
+                                {{ __('app.edit') }}
+                            </x-ts-button>
+                        </a>
+                    @endif
+
                     <x-ts-dropdown icon="tabler.menu-2" position="bottom-end">
                         @if (auth()->user()->hasPermission('person:update'))
-                            <a href="/people/{{ $person->id }}/edit-profile">
-                                <x-ts-dropdown.items>
-                                    <x-ts-icon icon="tabler.id" class="inline-block size-5 mr-2" />
-                                    {{ __('person.edit_profile') }}
-                                </x-ts-dropdown.items>
-                            </a>
-
-                            <a href="/people/{{ $person->id }}/edit-contact">
-                                <x-ts-dropdown.items>
-                                    <x-ts-icon icon="tabler.address-book" class="inline-block size-5 mr-2" />
-                                    {{ __('person.edit_contact') }}
-                                </x-ts-dropdown.items>
-                            </a>
-
-                            <a href="/people/{{ $person->id }}/edit-death">
-                                <x-ts-dropdown.items>
-                                    <x-ts-icon icon="tabler.grave-2" class="inline-block size-5 mr-2" />
-                                    {{ __('person.edit_death') }}
-                                </x-ts-dropdown.items>
-                            </a>
-
-                            <hr />
                             <a href="/people/{{ $person->id }}/edit-photos">
                                 <x-ts-dropdown.items>
                                     <x-ts-icon icon="tabler.photo" class="inline-block size-5 mr-2" />
