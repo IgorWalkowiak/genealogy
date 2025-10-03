@@ -133,13 +133,6 @@ final class PeopleController extends Controller
         return view('back.people.edit.profile', ['person' => $person]);
     }
 
-    public function edit(Person $person): View
-    {
-        abort_unless(auth()->user()->hasPermission('person:update'), 403, __('app.unauthorized_access'));
-
-        return view('back.people.edit.unified', ['person' => $person]);
-    }
-
     public function editPartner(Person $person, Couple $couple): View
     {
         abort_unless(auth()->user()->hasPermission('couple:update'), 403, __('app.unauthorized_access'));
