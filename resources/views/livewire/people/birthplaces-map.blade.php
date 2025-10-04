@@ -1,6 +1,13 @@
 <div class="w-full">
     {{-- Informacje o statystykach --}}
     <div class="mb-6 p-4 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-neutral-800 dark:text-neutral-200">Statystyki</h3>
+            <x-ts-button wire:click="openPlaceModal()" color="primary" sm>
+                <x-ts-icon icon="plus" class="size-4 mr-1" />
+                Dodaj miejscowość
+            </x-ts-button>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="text-center">
                 <div class="text-3xl font-bold text-primary-600 dark:text-primary-400">{{ $totalPeople }}</div>
@@ -36,6 +43,73 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Zarządzanie miejscowościami --}}
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4 mb-6">
+        <h3 class="text-xl font-bold mb-4 text-neutral-800 dark:text-neutral-200">
+            Zarządzanie miejscowościami
+        </h3>
+        
+        @if($places->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-600">
+                    <thead class="bg-neutral-50 dark:bg-neutral-600">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
+                                Nazwa
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
+                                Kod pocztowy
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
+                                Liczba osób
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
+                                Współrzędne
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
+                                Akcje
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-neutral-700 divide-y divide-neutral-200 dark:divide-neutral-600">
+                        @foreach($places as $place)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                                    {{ $place->name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                    {{ $place->postal_code ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                    {{ $place->people_count }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                    @if($place->latitude && $place->longitude)
+                                        {{ number_format($place->latitude, 4) }}, {{ number_format($place->longitude, 4) }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <x-ts-button wire:click="openPlaceModal({{ $place->id }})" color="primary" sm>
+                                        <x-ts-icon icon="pencil" class="size-4" />
+                                    </x-ts-button>
+                                    <x-ts-button wire:click="confirmDeletePlace({{ $place->id }})" color="red" sm>
+                                        <x-ts-icon icon="trash" class="size-4" />
+                                    </x-ts-button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-8 text-neutral-600 dark:text-neutral-400">
+                Brak miejscowości w bazie danych.
+            </div>
+        @endif
     </div>
 
     {{-- Lista miejsc --}}
@@ -78,6 +152,37 @@
             </div>
         @endif
     </div>
+
+    {{-- Modal edycji miejscowości --}}
+    <x-ts-modal wire="showPlaceModal" title="{{ $editingPlaceId ? 'Edytuj miejscowość' : 'Dodaj miejscowość' }}" size="lg">
+        <x-ts-errors class="mb-4" close />
+        
+        <div class="space-y-4">
+            <x-ts-input wire:model="placeName" label="Nazwa miejscowości *" placeholder="np. Warszawa" />
+            
+            <x-ts-input wire:model="placePostalCode" label="Kod pocztowy" placeholder="np. 00-001" />
+            
+            <div class="grid grid-cols-2 gap-4">
+                <x-ts-input wire:model="placeLatitude" label="Szerokość geograficzna" type="number" step="0.0000001" placeholder="np. 52.2297" />
+                
+                <x-ts-input wire:model="placeLongitude" label="Długość geograficzna" type="number" step="0.0000001" placeholder="np. 21.0122" />
+            </div>
+            
+            <div class="text-sm text-neutral-600 dark:text-neutral-400">
+                <p class="mb-2">💡 Wskazówka: Współrzędne geograficzne są opcjonalne. Jeśli je podasz, mapa będzie używała ich zamiast geokodowania.</p>
+                <p>Możesz znaleźć współrzędne na <a href="https://www.google.com/maps" target="_blank" class="text-primary-600 hover:underline">Google Maps</a></p>
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <x-ts-button wire:click="closePlaceModal" color="secondary">
+                {{ __('app.cancel') }}
+            </x-ts-button>
+            <x-ts-button wire:click="savePlace" color="primary">
+                {{ __('app.save') }}
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
 </div>
 
 @push('styles')
@@ -178,21 +283,40 @@ document.addEventListener('DOMContentLoaded', function() {
             // Aktualizuj wskaźnik postępu
             loadingProgress.textContent = `Geokodowanie ${i + 1} z ${birthplaces.length}: ${place.place}`;
             
-            // Dodaj małe opóźnienie, żeby nie przeciążyć API (Nominatim ma limit 1 req/sec)
-            await new Promise(resolve => setTimeout(resolve, 1100));
+            let coords = null;
             
-            console.log(`Geokodowanie: ${place.place}...`);
-            const coords = await geocodePlace(place.place);
+            // Jeśli mamy zapisane współrzędne, użyj ich
+            if (place.latitude && place.longitude) {
+                coords = {
+                    lat: place.latitude,
+                    lng: place.longitude,
+                    displayName: place.postal_code ? `${place.place}, ${place.postal_code}` : place.place
+                };
+                console.log(`✓ Użyto zapisanych współrzędnych dla: ${place.place}`);
+                successCount++;
+            } else {
+                // W przeciwnym razie geokoduj
+                await new Promise(resolve => setTimeout(resolve, 1100));
+                console.log(`Geokodowanie: ${place.place}...`);
+                coords = await geocodePlace(place.place);
+                
+                if (coords) {
+                    successCount++;
+                    console.log(`✓ Znaleziono: ${coords.displayName || place.place}`);
+                }
+            }
             
             if (coords) {
-                successCount++;
-                console.log(`✓ Znaleziono: ${coords.displayName || place.place}`);
-                
                 // Stwórz popup z listą osób
                 let popupContent = `<div class="font-bold text-lg mb-2">${place.place}</div>`;
                 
+                // Dodaj informację o kodzie pocztowym jeśli istnieje
+                if (place.postal_code) {
+                    popupContent += `<div class="text-xs text-neutral-500 mb-1">📮 ${place.postal_code}</div>`;
+                }
+                
                 // Dodaj informację o znalezionej lokalizacji jeśli jest inna niż wprowadzona
-                if (coords.displayName && !coords.displayName.includes(place.place)) {
+                if (coords.displayName && !coords.displayName.includes(place.place) && !place.latitude) {
                     popupContent += `<div class="text-xs text-neutral-500 mb-1 italic">📍 ${coords.displayName}</div>`;
                 }
                 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Forms\People;
 
 use App\Models\Gender;
+use App\Models\Place;
 use App\Rules\DobValid;
 use App\Rules\YobValid;
 use Illuminate\Support\Collection;
@@ -37,6 +38,8 @@ final class PersonForm extends Form
 
     public ?string $pob = null;
 
+    public ?int $birthplace_id = null;
+
     public array $uploads = [];
 
     public array $backup = [];
@@ -54,6 +57,21 @@ final class PersonForm extends Form
     }
 
     // -----------------------------------------------------------------------
+    #[Computed(persist: true, seconds: 3600, cache: true)]
+    public function places(): Collection
+    {
+        return Place::select(['id', 'name', 'postal_code'])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($place) {
+                return [
+                    'id' => $place->id,
+                    'full_name' => $place->full_name,
+                ];
+            });
+    }
+
+    // -----------------------------------------------------------------------
     protected function rules(): array
     {
         return [
@@ -66,6 +84,7 @@ final class PersonForm extends Form
             'yob'       => ['nullable', 'integer', 'min:1', 'max:' . date('Y'), new YobValid],
             'dob'       => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today', new DobValid],
             'pob'       => ['nullable', 'string', 'max:255'],
+            'birthplace_id' => ['nullable', 'integer', 'exists:places,id'],
             'uploads.*' => [
                 'file',
                 'mimetypes:' . implode(',', array_keys(config('app.upload_photo_accept'))),

@@ -59,7 +59,7 @@
             <tr class="align-top">
                 <td colspan="2">&nbsp;</td>
                 <td>{{ __('person.pob') }} :</td>
-                <td class="break-words max-w-sm">{{ $person->pob }}</td>
+                <td class="break-words max-w-sm">{{ $person->birthplace_formatted }}</td>
             </tr>
             <tr class="align-top">
                 <td colspan="2">&nbsp;</td>

@@ -7,6 +7,7 @@ namespace App\Livewire\People\Edit;
 use App\Livewire\Traits\TrimStringsAndConvertEmptyStringsToNull;
 use App\Models\Gender;
 use App\Models\Person;
+use App\Models\Place;
 use App\Rules\DobValid;
 use App\Rules\YobValid;
 use Carbon\Carbon;
@@ -46,6 +47,8 @@ final class Profile extends Component
 
     public $pob = null;
 
+    public $birthplace_id = null;
+
     public $summary = null;
 
     // -----------------------------------------------------------------------
@@ -53,6 +56,21 @@ final class Profile extends Component
     public function genders(): Collection
     {
         return Gender::select(['id', 'name'])->orderBy('name')->get();
+    }
+
+    // -----------------------------------------------------------------------
+    #[Computed]
+    public function places(): Collection
+    {
+        return Place::select(['id', 'name', 'postal_code'])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($place) {
+                return [
+                    'id' => $place->id,
+                    'full_name' => $place->full_name,
+                ];
+            });
     }
 
     // -----------------------------------------------------------------------
@@ -104,6 +122,7 @@ final class Profile extends Component
                 new DobValid,
             ],
             'pob' => ['nullable', 'string', 'max:255'],
+            'birthplace_id' => ['nullable', 'integer', 'exists:places,id'],
 
             'summary' => ['nullable', 'string', 'max:65535'],
         ];
@@ -145,6 +164,7 @@ final class Profile extends Component
         $this->yob       = $this->person->yob ?? null;
         $this->dob       = $this->person->dob ? Carbon::parse($this->person->dob)->format('Y-m-d') : null;
         $this->pob       = $this->person->pob;
+        $this->birthplace_id = $this->person->birthplace_id;
         $this->summary   = $this->person->summary;
     }
 }

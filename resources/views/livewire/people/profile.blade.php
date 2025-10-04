@@ -126,9 +126,16 @@
                     <x-ts-date wire:model="dob" id="dob" label="{{ __('person.dob') }} :" format="YYYY-MM-DD" :max-date="now()" placeholder="{{ __('app.select') }} ..." />
                 </div>
 
-                {{-- pob --}}
+                {{-- birthplace_id --}}
                 <div class="col-span-6">
-                    <x-ts-input wire:model="pob" id="pob" label="{{ __('person.pob') }} :" />
+                    <x-ts-select.styled 
+                        wire:model="birthplace_id" 
+                        id="birthplace_id" 
+                        label="{{ __('person.pob') }} :" 
+                        :options="$this->places()" 
+                        select="label:full_name|value:id" 
+                        placeholder="{{ __('app.select') }} ..." 
+                        searchable />
                 </div>
 
                 <x-hr.narrow class="col-span-6 my-0!" />
@@ -176,7 +183,7 @@
                     </tr>
                     <tr class="align-top border-b-2">
                         <td class="pr-2 border-r-2">{{ __('person.pob') }}</td>
-                        <td class="pl-2 break-words max-w-sm">{{ $person->pob }}</td>
+                        <td class="pl-2 break-words max-w-sm">{{ $person->birthplace_formatted }}</td>
                     </tr>
 
                     @if ($person->isDeceased())

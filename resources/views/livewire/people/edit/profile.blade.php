@@ -58,9 +58,16 @@
                         :max-date="now()" placeholder="{{ __('app.select') }} ..." />
                 </div>
 
-                {{-- pob --}}
+                {{-- birthplace_id --}}
                 <div class="col-span-6">
-                    <x-ts-input wire:model="pob" id="pob" label="{{ __('person.pob') }} :" autocomplete="pob" />
+                    <x-ts-select.styled 
+                        wire:model="birthplace_id" 
+                        id="birthplace_id" 
+                        label="{{ __('person.pob') }} :" 
+                        :options="$places" 
+                        select="label:full_name|value:id" 
+                        placeholder="{{ __('app.select') }} ..." 
+                        searchable />
                 </div>
                 <x-hr.narrow class="col-span-6 my-0!" />
 

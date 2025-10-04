@@ -54,7 +54,7 @@ final class Person extends Model implements HasMedia
         'mother_id',
         'parents_id',
 
-        'dob', 'yob', 'pob',
+        'dob', 'yob', 'pob', 'birthplace_id',
         'dod', 'yod', 'pod',
 
         'summary',
@@ -310,6 +310,12 @@ final class Person extends Model implements HasMedia
     public function gender(): BelongsTo
     {
         return $this->belongsTo(Gender::class);
+    }
+
+    /* returns BIRTHPLACE (1 Place) based on birthplace_id */
+    public function birthplace(): BelongsTo
+    {
+        return $this->belongsTo(Place::class, 'birthplace_id');
     }
 
     /* returns FATHER (1 Person) based on father_id */
@@ -654,6 +660,19 @@ final class Person extends Model implements HasMedia
             }
 
             return (string) $birth;
+        });
+    }
+
+    protected function birthplaceFormatted(): Attribute
+    {
+        return Attribute::make(get: function (): ?string {
+            // Najpierw sprawdź czy jest relacja do miejsca
+            if ($this->birthplace_id && $this->birthplace) {
+                return $this->birthplace->full_name;
+            }
+            
+            // Fallback na starą kolumnę pob
+            return $this->pob;
         });
     }
 
