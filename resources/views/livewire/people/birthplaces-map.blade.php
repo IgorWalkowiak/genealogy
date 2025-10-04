@@ -222,9 +222,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const birthplaces = @json($birthplaces);
 
     // Funkcja do geokodowania miejsca (użycie Nominatim API)
-    async function geocodePlace(placeName) {
+    async function geocodePlace(placeName, postalCode = null) {
         try {
-            // Spróbuj najpierw z dokładnym zapytaniem (wraz z Polską)
+            // Jeśli mamy kod pocztowy, użyj go w pierwszej kolejności
+            if (postalCode) {
+                let searchQuery = `${placeName}, ${postalCode}`;
+                let response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?` + 
+                    `format=json&` +
+                    `q=${encodeURIComponent(searchQuery)}&` +
+                    `countrycodes=pl&` +
+                    `limit=5&` +
+                    `addressdetails=1`
+                );
+                let data = await response.json();
+                
+                if (data.length > 0) {
+                    // Wybierz najlepszy wynik (najwyższy importance)
+                    data.sort((a, b) => (b.importance || 0) - (a.importance || 0));
+                    
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon),
+                        displayName: data[0].display_name
+                    };
+                }
+            }
+            
+            // Spróbuj z samą nazwą miejsca (wraz z Polską)
             let response = await fetch(
                 `https://nominatim.openstreetmap.org/search?` + 
                 `format=json&` +
@@ -297,8 +322,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // W przeciwnym razie geokoduj
                 await new Promise(resolve => setTimeout(resolve, 1100));
-                console.log(`Geokodowanie: ${place.place}...`);
-                coords = await geocodePlace(place.place);
+                const searchInfo = place.postal_code ? `${place.place} (${place.postal_code})` : place.place;
+                console.log(`Geokodowanie: ${searchInfo}...`);
+                coords = await geocodePlace(place.place, place.postal_code);
                 
                 if (coords) {
                     successCount++;
@@ -363,10 +389,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (failedPlaces.length > 0) {
             console.log(`   Nie znaleziono lokalizacji dla:`);
             failedPlaces.forEach(place => console.log(`   - ${place}`));
-            console.log(`\n💡 Wskazówka: Dodaj więcej szczegółów do miejsca urodzenia, np.:`);
-            console.log(`   "Śliwno, powiat olecki, warmińsko-mazurskie"`);
-            console.log(`   "Śliwno, 19-400"`);
-            console.log(`   "Warszawa, Mokotów"`);
+            console.log(`\n💡 Wskazówka: Dodaj kod pocztowy lub więcej szczegółów do miejsca urodzenia:`);
+            console.log(`   - Edytuj miejscowość i dodaj kod pocztowy (np. 19-400)`);
+            console.log(`   - Dodaj współrzędne geograficzne ręcznie`);
+            console.log(`   - Lub użyj pełniejszej nazwy (np. "Śliwno, powiat olecki, warmińsko-mazurskie")`);
         }
     }
 
