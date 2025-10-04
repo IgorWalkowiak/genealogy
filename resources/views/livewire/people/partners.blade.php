@@ -27,7 +27,7 @@
                                         <x-ts-icon icon="tabler.user-edit" class="inline-block size-5 mr-2" />
                                         <div>
                                             {{ $couple->person2_id === $person->id ? $couple->person1->name : $couple->person2->name }}<br />
-                                            {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '??' }}
+                                            {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '' }}
                                         </div>
                                     </x-ts-dropdown.items>
                                 </a>
@@ -43,7 +43,7 @@
                                     <x-ts-icon icon="tabler.trash" class="inline-block size-5 mr-2" />
                                     <div>
                                         {{ $couple->person2_id === $person->id ? $couple->person1->name : $couple->person2->name }}<br />
-                                        {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '??' }}
+                                        {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '' }}
                                     </div>
                                 </x-ts-dropdown.items>
                             @endforeach
@@ -78,13 +78,11 @@
                     <br />
 
                     <p>
-                        <x-ts-icon icon="tabler.hearts" class="inline-block size-5 text-emerald-600" />
-                        {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '??' }}
+                        {{ $couple->date_start ? $couple->date_start->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '' }}
 
                         @if ($couple->date_end or $couple->has_ended)
                             <br />
-                            <x-ts-icon icon="tabler.hearts-off" class="inline-block size-5 text-red-600 dark:text-red-400" />
-                            {{ $couple->date_end ? $couple->date_end->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '??' }}
+                            {{ $couple->date_end ? $couple->date_end->timezone(session('timezone') ?? 'UTC')->isoFormat('LL') : '' }}
                         @endif
                     </p>
                 </div>
