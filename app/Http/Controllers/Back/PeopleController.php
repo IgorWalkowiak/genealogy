@@ -26,6 +26,11 @@ final class PeopleController extends Controller
         return view('back.people.birthdays', ['months' => $months, 'people' => $people]);
     }
 
+    public function birthplacesMap(): View
+    {
+        return view('back.people.birthplaces-map');
+    }
+
     public function add(): View
     {
         abort_unless(auth()->user()->hasPermission('person:create'), 403, __('app.unauthorized_access'));

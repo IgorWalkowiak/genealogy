@@ -151,4 +151,11 @@ return [
     'password_strong'      => '强',
     'password_very_strong' => '非常强',
     'check_breach'         => '检查您的电子邮件地址是否出现在数据泄露中',
+
+    // Birthplaces map
+    'birthplaces_map'           => '出生地地图',
+    'birthplaces_with_location' => '有出生地的人',
+    'unique_places'             => '独特的地方',
+    'birthplaces_list'          => '出生地列表',
+    'no_birthplaces_found'      => '未找到出生地',
 ];

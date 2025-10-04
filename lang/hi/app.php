@@ -122,4 +122,11 @@ return [
     'password_strong'      => 'मजबूत',
     'password_very_strong' => 'बहुत मज़बूत',
     'check_breach'         => 'जांचें कि आपका ईमेल पता किसी डेटा उल्लंघन में है या नहीं',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'जन्म स्थान का नक्शा',
+    'birthplaces_with_location' => 'जन्म स्थान वाले लोग',
+    'unique_places'             => 'अद्वितीय स्थान',
+    'birthplaces_list'          => 'जन्म स्थानों की सूची',
+    'no_birthplaces_found'      => 'कोई जन्म स्थान नहीं मिला',
 ];

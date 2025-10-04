@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Mạnh',
     'password_very_strong' => 'Rất mạnh',
     'check_breach'         => 'Kiểm tra xem địa chỉ email của bạn có nằm trong vụ rò rỉ dữ liệu không',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Bản đồ nơi sinh',
+    'birthplaces_with_location' => 'Người có nơi sinh',
+    'unique_places'             => 'Địa điểm duy nhất',
+    'birthplaces_list'          => 'Danh sách nơi sinh',
+    'no_birthplaces_found'      => 'Không tìm thấy nơi sinh',
 ];

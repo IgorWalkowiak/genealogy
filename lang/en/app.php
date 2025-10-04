@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Strong',
     'password_very_strong' => 'Very strong',
     'check_breach'         => 'Check if your email address is in a data breach',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Birthplaces Map',
+    'birthplaces_with_location' => 'People with birthplace',
+    'unique_places'             => 'Unique places',
+    'birthplaces_list'          => 'List of birthplaces',
+    'no_birthplaces_found'      => 'No birthplaces found',
 ];

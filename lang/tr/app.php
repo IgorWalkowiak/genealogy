@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Güçlü',
     'password_very_strong' => 'Çok güçlü',
     'check_breach'         => 'E-posta adresinizin bir veri ihlalinde yer alıp almadığını kontrol edin',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Doğum yerleri haritası',
+    'birthplaces_with_location' => 'Doğum yeri olan kişiler',
+    'unique_places'             => 'Benzersiz yerler',
+    'birthplaces_list'          => 'Doğum yerleri listesi',
+    'no_birthplaces_found'      => 'Doğum yeri bulunamadı',
 ];

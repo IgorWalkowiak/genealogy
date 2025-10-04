@@ -126,4 +126,11 @@ return [
     'password_strong'      => 'Forte',
     'password_very_strong' => 'Muito forte',
     'check_breach'         => 'Verifique se o seu endereço de e-mail está em uma violação de dados',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Mapa de locais de nascimento',
+    'birthplaces_with_location' => 'Pessoas com local de nascimento',
+    'unique_places'             => 'Locais únicos',
+    'birthplaces_list'          => 'Lista de locais de nascimento',
+    'no_birthplaces_found'      => 'Nenhum local de nascimento encontrado',
 ];

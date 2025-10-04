@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Kuat',
     'password_very_strong' => 'Sangat kuat',
     'check_breach'         => 'Periksa apakah alamat email Anda ada dalam pelanggaran data',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Peta tempat lahir',
+    'birthplaces_with_location' => 'Orang dengan tempat lahir',
+    'unique_places'             => 'Tempat unik',
+    'birthplaces_list'          => 'Daftar tempat lahir',
+    'no_birthplaces_found'      => 'Tidak ada tempat lahir yang ditemukan',
 ];

@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Sterk',
     'password_very_strong' => 'Zeer sterk',
     'check_breach'         => 'Controleer of je e-mailadres in een datalek voorkomt',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Kaart van geboorteplaatsen',
+    'birthplaces_with_location' => 'Personen met geboorteplaats',
+    'unique_places'             => 'Unieke plaatsen',
+    'birthplaces_list'          => 'Lijst van geboorteplaatsen',
+    'no_birthplaces_found'      => 'Geen geboorteplaatsen gevonden',
 ];

@@ -151,4 +151,11 @@ return [
     'password_strong'      => 'Stark',
     'password_very_strong' => 'Sehr stark',
     'check_breach'         => 'Prüfen Sie, ob Ihre E-Mail-Adresse in einem Datenleck enthalten ist',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Karte der Geburtsorte',
+    'birthplaces_with_location' => 'Personen mit Geburtsort',
+    'unique_places'             => 'Einzigartige Orte',
+    'birthplaces_list'          => 'Liste der Geburtsorte',
+    'no_birthplaces_found'      => 'Keine Geburtsorte gefunden',
 ];

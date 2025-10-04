@@ -30,6 +30,11 @@
                         <x-ts-icon icon="tabler.cake" class="inline-block size-5 mr-1" />
                         {{ __('birthday.birthdays') }}
                     </x-nav-link>
+
+                    <x-nav-link href="{{ route('people.birthplaces-map') }}" :active="request()->routeIs('people.birthplaces-map')">
+                        <x-ts-icon icon="tabler.map-pin" class="inline-block size-5 mr-1" />
+                        {{ __('app.birthplaces_map') }}
+                    </x-nav-link>
                 </div>
             </div>
         </div>
@@ -212,6 +217,11 @@
             <x-nav-link-responsive href="{{ route('people.birthdays') }}" :active="request()->routeIs('people.birthdays')">
                 <x-ts-icon icon="tabler.cake" class="inline-block size-5 mr-1" />
                 {{ __('birthday.birthdays') }}
+            </x-nav-link-responsive>
+
+            <x-nav-link-responsive href="{{ route('people.birthplaces-map') }}" :active="request()->routeIs('people.birthplaces-map')">
+                <x-ts-icon icon="tabler.map-pin" class="inline-block size-5 mr-1" />
+                {{ __('app.birthplaces_map') }}
             </x-nav-link-responsive>
 
             <x-nav-link-responsive href="{{ route('help') }}" :active="request()->routeIs('help')">

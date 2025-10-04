@@ -152,4 +152,11 @@ return [
     'password_strong'      => 'Silne',
     'password_very_strong' => 'Bardzo silne',
     'check_breach'         => 'Sprawdź, czy Twój adres e-mail wystąpił w wycieku danych',
+
+    // Birthplaces map
+    'birthplaces_map'           => 'Mapa miejsc urodzenia',
+    'birthplaces_with_location' => 'Osób z miejscem urodzenia',
+    'unique_places'             => 'Unikatowych miejsc',
+    'birthplaces_list'          => 'Lista miejsc urodzenia',
+    'no_birthplaces_found'      => 'Nie znaleziono żadnych miejsc urodzenia',
 ];
