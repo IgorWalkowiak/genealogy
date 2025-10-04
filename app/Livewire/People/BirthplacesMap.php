@@ -42,14 +42,7 @@ final class BirthplacesMap extends Component
     // ------------------------------------------------------------------------------
     public function render(): View
     {
-        $places = Place::forTeam(auth()->user()->currentTeam->id)
-            ->withCount('people')
-            ->orderBy('name')
-            ->get();
-
-        return view('livewire.people.birthplaces-map', [
-            'places' => $places,
-        ]);
+        return view('livewire.people.birthplaces-map');
     }
 
     // ------------------------------------------------------------------------------
@@ -175,6 +168,7 @@ final class BirthplacesMap extends Component
                 ->get();
 
             return [
+                'place_id' => $place->id,
                 'place' => $place->name,
                 'postal_code' => $place->postal_code,
                 'count' => $people->count(),

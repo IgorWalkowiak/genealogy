@@ -69,73 +69,6 @@
         </div>
     </div>
 
-    {{-- Zarządzanie miejscowościami --}}
-    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4 mb-6">
-        <h3 class="text-xl font-bold mb-4 text-neutral-800 dark:text-neutral-200">
-            Zarządzanie miejscowościami
-        </h3>
-        
-        @if($places->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-600">
-                    <thead class="bg-neutral-50 dark:bg-neutral-600">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
-                                Nazwa
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
-                                Kod pocztowy
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
-                                Liczba osób
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
-                                Współrzędne
-                            </th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-300 uppercase tracking-wider">
-                                Akcje
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-neutral-700 divide-y divide-neutral-200 dark:divide-neutral-600">
-                        @foreach($places as $place)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ $place->name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $place->postal_code ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $place->people_count }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    @if($place->latitude && $place->longitude)
-                                        {{ number_format($place->latitude, 4) }}, {{ number_format($place->longitude, 4) }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <x-ts-button wire:click="openPlaceModal({{ $place->id }})" color="primary" sm>
-                                        <x-ts-icon icon="pencil" class="size-4" />
-                                    </x-ts-button>
-                                    <x-ts-button wire:click="confirmDeletePlace({{ $place->id }})" color="red" sm>
-                                        <x-ts-icon icon="trash" class="size-4" />
-                                    </x-ts-button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="text-center py-8 text-neutral-600 dark:text-neutral-400">
-                Brak miejscowości w bazie danych.
-            </div>
-        @endif
-    </div>
-
     {{-- Lista miejsc --}}
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
         <h3 class="text-xl font-bold mb-4 text-neutral-800 dark:text-neutral-200">
@@ -145,9 +78,23 @@
         @if(count($birthplaces) > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($birthplaces as $birthplace)
-                    <div class="bg-neutral-50 dark:bg-neutral-600 rounded-lg p-4 border border-neutral-200 dark:border-neutral-500">
-                        <div class="font-bold text-lg mb-2 text-neutral-800 dark:text-neutral-200">
-                            {{ $birthplace['place'] }}
+                    <div class="bg-neutral-50 dark:bg-neutral-600 rounded-lg p-4 border border-neutral-200 dark:border-neutral-500 relative">
+                        {{-- Przyciski edycji i usuwania w prawym górnym rogu --}}
+                        <div class="absolute top-2 right-2 flex gap-1">
+                            <button wire:click="openPlaceModal({{ $birthplace['place_id'] }})" 
+                                    class="p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded transition-colors"
+                                    title="Edytuj">
+                                <x-ts-icon icon="pencil" class="size-4" />
+                            </button>
+                            <button wire:click="confirmDeletePlace({{ $birthplace['place_id'] }})" 
+                                    class="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                                    title="Usuń">
+                                <x-ts-icon icon="trash" class="size-4" />
+                            </button>
+                        </div>
+                        
+                        <div class="font-bold text-lg mb-2 text-neutral-800 dark:text-neutral-200 pr-20">
+                            {{ $birthplace['place'] }} @if($birthplace['postal_code']){{ $birthplace['postal_code'] }}@endif
                             <span class="text-sm font-normal text-neutral-600 dark:text-neutral-400">
                                 ({{ $birthplace['count'] }})
                             </span>
