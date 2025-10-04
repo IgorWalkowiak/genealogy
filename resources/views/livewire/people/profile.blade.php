@@ -103,17 +103,11 @@
                 <div class="col-span-6 md:col-span-3">
                     <x-ts-input wire:model="birthname" id="birthname" label="{{ __('person.birthname') }} :" />
                 </div>
-
-                {{-- nickname --}}
-                <div class="col-span-6 md:col-span-3">
-                    <x-ts-input wire:model="nickname" id="nickname" label="{{ __('person.nickname') }} :" />
-                </div>
-
                 <x-hr.narrow class="col-span-6 my-0!" />
 
                 {{-- sex --}}
                 <div class="col-span-6">
-                    <x-label for="sex" class="mr-5" value="{{ __('person.sex') }} ({{ __('person.biological') }}) : *" />
+                    <x-label for="sex" class="mr-5" value="{{ __('person.sex') }}: *" />
                     <div class="flex gap-4 mt-2">
                         <x-ts-radio color="primary" wire:model="sex" name="sex" id="sexM" value="m" label="{{ __('app.male') }}" />
                         <x-ts-radio color="primary" wire:model="sex" name="sex" id="sexF" value="f" label="{{ __('app.female') }}" />
@@ -162,14 +156,10 @@
                         <td class="pr-2 border-r-2">{{ __('person.birthname') }}</td>
                         <td class="pl-2 break-words max-w-sm">{{ $person->birthname }}</td>
                     </tr>
-                    <tr class="align-top border-b-2">
-                        <td class="pr-2 border-r-2">{{ __('person.nickname') }}</td>
-                        <td class="pl-2 break-words max-w-sm">{{ $person->nickname }}</td>
-                    </tr>
 
                     <tr class="align-top">
-                        <td class="pr-2 border-r-2">{{ __('person.sex') }} ({{ __('person.biological') }})</td>
-                        <td class="pl-2">
+                        <td class="pr-2 border-b-2  border-t-2 border-r-2">{{ __('person.sex') }}</td>
+                        <td class="pl-2 border-b-2 border-t-2">
                             {{ $person->sex === 'm' ? __('app.male') : __('app.female') }}
                             <x-ts-icon icon="tabler.{{ $person->sex === 'm' ? 'gender-male' : 'gender-female' }}" class="inline-block size-5" />
                         </td>

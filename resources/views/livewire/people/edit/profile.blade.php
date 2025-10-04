@@ -33,12 +33,6 @@
                     <x-ts-input wire:model="birthname" id="birthname" label="{{ __('person.birthname') }} :" />
                 </div>
 
-                {{-- nickname --}}
-                <div class="col-span-6 md:col-span-3">
-                    <x-ts-input wire:model="nickname" id="nickname" label="{{ __('person.nickname') }} :" />
-                </div>
-                <x-hr.narrow class="col-span-6 my-0!" />
-
                 {{-- sex --}}
                 <div class="col-span-3">
                     <x-label for="sex" class="mr-5" value="{{ __('person.sex') }} ({{ __('person.biological') }}) : *" />

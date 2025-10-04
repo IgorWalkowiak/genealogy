@@ -24,11 +24,6 @@
                 <td>{{ __('person.birthname') }} :</td>
                 <td class="break-words max-w-sm">{{ $person->birthname }}</td>
             </tr>
-            <tr class="align-top">
-                <td colspan="2">&nbsp;</td>
-                <td>{{ __('person.nickname') }} :</td>
-                <td class="break-words max-w-sm">{{ $person->nickname }}</td>
-            </tr>
 
             {{-- sex & gender --}}
             <tr>
