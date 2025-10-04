@@ -52,7 +52,7 @@ final class Exportteam extends Component
         // Load team data with relationships for better performance
         $this->teamPersons = $this->user->currentTeam
             ->persons()
-            ->with(['metadata'])
+            ->with(['metadata', 'birthplace'])
             ->orderBy('surname')
             ->orderBy('firstname')
             ->get();

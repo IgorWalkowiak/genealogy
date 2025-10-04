@@ -62,7 +62,8 @@ final class Profile extends Component
     #[Computed]
     public function places(): Collection
     {
-        return Place::select(['id', 'name', 'postal_code'])
+        return Place::forTeam($this->person->team_id)
+            ->select(['id', 'name', 'postal_code'])
             ->orderBy('name')
             ->get()
             ->map(function ($place) {

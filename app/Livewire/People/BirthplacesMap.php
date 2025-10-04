@@ -42,7 +42,10 @@ final class BirthplacesMap extends Component
     // ------------------------------------------------------------------------------
     public function render(): View
     {
-        $places = Place::withCount('people')->orderBy('name')->get();
+        $places = Place::forTeam(auth()->user()->currentTeam->id)
+            ->withCount('people')
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.people.birthplaces-map', [
             'places' => $places,
@@ -56,7 +59,7 @@ final class BirthplacesMap extends Component
         $this->editingPlaceId = $placeId;
 
         if ($placeId) {
-            $place = Place::find($placeId);
+            $place = Place::forTeam(auth()->user()->currentTeam->id)->find($placeId);
             if ($place) {
                 $this->placeName = $place->name;
                 $this->placePostalCode = $place->postal_code ?? '';
@@ -89,7 +92,8 @@ final class BirthplacesMap extends Component
         ]);
 
         if ($this->editingPlaceId) {
-            $place = Place::find($this->editingPlaceId);
+            $place = Place::forTeam(auth()->user()->currentTeam->id)
+                ->findOrFail($this->editingPlaceId);
             $place->update([
                 'name' => $this->placeName,
                 'postal_code' => $this->placePostalCode ?: null,
@@ -99,6 +103,7 @@ final class BirthplacesMap extends Component
             $this->toast()->success(__('app.save'), 'Miejsce zostało zaktualizowane.')->send();
         } else {
             Place::create([
+                'team_id' => auth()->user()->currentTeam->id,
                 'name' => $this->placeName,
                 'postal_code' => $this->placePostalCode ?: null,
                 'latitude' => $this->placeLatitude,
@@ -113,7 +118,7 @@ final class BirthplacesMap extends Component
 
     public function confirmDeletePlace(int $placeId): void
     {
-        $place = Place::find($placeId);
+        $place = Place::forTeam(auth()->user()->currentTeam->id)->find($placeId);
 
         $this->dialog()
             ->question(__('app.attention') . '!', 'Czy na pewno chcesz usunąć to miejsce?')
@@ -130,11 +135,13 @@ final class BirthplacesMap extends Component
 
     public function deletePlace(int $placeId): void
     {
-        $place = Place::find($placeId);
+        $place = Place::forTeam(auth()->user()->currentTeam->id)->find($placeId);
 
         if ($place) {
             // Ustaw birthplace_id na null dla wszystkich osób związanych z tym miejscem
-            Person::where('birthplace_id', $placeId)->update(['birthplace_id' => null]);
+            Person::where('team_id', auth()->user()->currentTeam->id)
+                ->where('birthplace_id', $placeId)
+                ->update(['birthplace_id' => null]);
 
             $place->delete();
             $this->toast()->success(__('app.delete'), 'Miejsce zostało usunięte.')->send();
@@ -145,17 +152,23 @@ final class BirthplacesMap extends Component
     // ------------------------------------------------------------------------------
     private function loadBirthplaces(): void
     {
-        // Pobierz wszystkie miejsca urodzenia z liczbą osób z nowej struktury
-        $places = Place::withCount('people')
+        $teamId = auth()->user()->currentTeam->id;
+        
+        // Pobierz wszystkie miejsca urodzenia z liczbą osób z nowej struktury dla obecnego teamu
+        $places = Place::forTeam($teamId)
+            ->withCount('people')
             ->having('people_count', '>', 0)
             ->get();
 
-        $this->totalPeople = Person::count();
-        $this->peopleWithBirthplace = Person::whereNotNull('birthplace_id')->count();
+        $this->totalPeople = Person::where('team_id', $teamId)->count();
+        $this->peopleWithBirthplace = Person::where('team_id', $teamId)
+            ->whereNotNull('birthplace_id')
+            ->count();
 
         // Przygotuj dane dla mapy
-        $this->birthplaces = $places->map(function ($place) {
+        $this->birthplaces = $places->map(function ($place) use ($teamId) {
             $people = $place->people()
+                ->where('team_id', $teamId)
                 ->select('id', 'firstname', 'surname', 'dob', 'yob')
                 ->orderBy('surname')
                 ->orderBy('firstname')
@@ -164,7 +177,7 @@ final class BirthplacesMap extends Component
             return [
                 'place' => $place->name,
                 'postal_code' => $place->postal_code,
-                'count' => $place->people_count,
+                'count' => $people->count(),
                 'latitude' => $place->latitude,
                 'longitude' => $place->longitude,
                 'people' => $people->map(fn ($person) => [

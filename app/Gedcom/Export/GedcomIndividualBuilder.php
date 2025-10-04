@@ -181,7 +181,7 @@ class GedcomIndividualBuilder
      * Build birth-related fields for an individual.
      *
      * Handles both full birth dates and year-only birth information,
-     * plus place of birth details.
+     * plus place of birth details with postal codes and coordinates.
      *
      * @param  Person  $person  Person model instance
      * @return array<string> Birth field lines
@@ -189,7 +189,9 @@ class GedcomIndividualBuilder
     private function buildBirthFields(Person $person): array
     {
         $lines = [];
-        if ($person->dob || $person->yob || $person->pob) {
+        $hasBirthData = $person->dob || $person->yob || $person->pob || $person->birthplace_id;
+        
+        if ($hasBirthData) {
             $lines[] = '1 BIRT';
 
             // Full date of birth
@@ -203,8 +205,29 @@ class GedcomIndividualBuilder
                 $lines[] = '2 DATE ' . (int) $person->yob;
             }
 
-            // Place of birth
-            if ($person->pob) {
+            // Place of birth - prioritize birthplace relation over legacy pob field
+            if ($person->birthplace_id && $person->birthplace) {
+                $place = $person->birthplace;
+                $lines[] = '2 PLAC ' . $this->formatter->sanitizeText($place->name);
+                
+                // Add postal code if available (GEDCOM 7.0 format)
+                if ($place->postal_code) {
+                    $lines[] = '3 POST ' . $this->formatter->sanitizeText($place->postal_code);
+                }
+                
+                // Add coordinates if available
+                if ($place->latitude || $place->longitude) {
+                    $lines[] = '3 MAP';
+                    if ($place->latitude) {
+                        $lines[] = '4 LATI ' . $this->formatter->formatGedcomCoordinate($place->latitude, 'latitude');
+                    }
+                    if ($place->longitude) {
+                        $lines[] = '4 LONG ' . $this->formatter->formatGedcomCoordinate($place->longitude, 'longitude');
+                    }
+                }
+            }
+            // Fallback to legacy pob field if no birthplace relation
+            elseif ($person->pob) {
                 $lines[] = '2 PLAC ' . $this->formatter->sanitizeText((string) $person->pob);
             }
         }

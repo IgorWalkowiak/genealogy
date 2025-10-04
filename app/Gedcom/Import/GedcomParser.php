@@ -34,6 +34,9 @@ class GedcomParser
         // Add progress tracking
         $totalLines     = mb_substr_count($content, "\n");
         $processedLines = 0;
+        
+        // Track the hierarchy path for nested structures
+        $levelStack = [];
 
         foreach ($lines as $lineNumber => $line) {
             // Progress logging
@@ -57,6 +60,9 @@ class GedcomParser
 
             // Handle level 0 records (new records)
             if ($level === 0) {
+                // Reset level stack for new record
+                $levelStack = [];
+                
                 if (count($parts) >= 3) {
                     $possibleId = $parts[1];
                     $tag        = $parts[2];
@@ -104,39 +110,45 @@ class GedcomParser
                         $currentRecordId = null;
                     }
                 }
-            } elseif ($level === 1 && $currentRecord !== null && isset($currentRecord['data'])) {
-                // Level 1 data for current record - add additional safety check
+            } elseif ($level >= 1 && $currentRecord !== null && isset($currentRecord['data'])) {
+                // Handle nested levels dynamically
                 $tag   = $parts[1];
                 $value = implode(' ', array_slice($parts, 2));
-
-                $currentRecord['data'][] = [
+                
+                // Trim level stack to current level
+                while (count($levelStack) > 0 && end($levelStack)['level'] >= $level) {
+                    array_pop($levelStack);
+                }
+                
+                // Create new data node
+                $newNode = [
                     'tag'   => $tag,
                     'value' => mb_trim($value),
-                    'level' => 1,
+                    'level' => $level,
                     'data'  => [],
                 ];
-            } elseif ($level === 2 && $currentRecord !== null &&
-                      isset($currentRecord['data']) && ! empty($currentRecord['data'])) {
-                // Level 2 data - add to the last level 1 item
-                $lastIndex = count($currentRecord['data']) - 1;
-                if ($lastIndex >= 0) {
-                    $tag   = $parts[1];
-                    $value = implode(' ', array_slice($parts, 2));
-
-                    // Ensure the data array exists
-                    if (! isset($currentRecord['data'][$lastIndex]['data'])) {
-                        $currentRecord['data'][$lastIndex]['data'] = [];
+                
+                // Add to appropriate parent
+                if (empty($levelStack)) {
+                    // Level 1 - add directly to record
+                    $currentRecord['data'][] = $newNode;
+                    $levelStack[] = [
+                        'level' => $level,
+                        'ref'   => &$currentRecord['data'][count($currentRecord['data']) - 1],
+                    ];
+                } else {
+                    // Nested level - add to parent's data array
+                    $parent = &$levelStack[count($levelStack) - 1]['ref'];
+                    if (!isset($parent['data'])) {
+                        $parent['data'] = [];
                     }
-
-                    $currentRecord['data'][$lastIndex]['data'][] = [
-                        'tag'   => $tag,
-                        'value' => mb_trim($value),
-                        'level' => 2,
+                    $parent['data'][] = $newNode;
+                    $levelStack[] = [
+                        'level' => $level,
+                        'ref'   => &$parent['data'][count($parent['data']) - 1],
                     ];
                 }
             }
-            // For higher levels (3+) or when no current record, we skip for now
-            // This simplified approach handles the most common GEDCOM structures
         }
 
         // Remove references to avoid memory issues

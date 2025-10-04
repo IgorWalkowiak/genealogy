@@ -57,10 +57,11 @@ final class PersonForm extends Form
     }
 
     // -----------------------------------------------------------------------
-    #[Computed(persist: true, seconds: 3600, cache: true)]
+    #[Computed]
     public function places(): Collection
     {
-        return Place::select(['id', 'name', 'postal_code'])
+        return Place::forTeam(auth()->user()->currentTeam->id)
+            ->select(['id', 'name', 'postal_code'])
             ->orderBy('name')
             ->get()
             ->map(function ($place) {

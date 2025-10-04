@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Place extends Model
@@ -15,11 +16,20 @@ final class Place extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'team_id',
         'name',
         'postal_code',
         'latitude',
         'longitude',
     ];
+
+    /**
+     * Get the team that owns the place.
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 
     /**
      * Get all people born in this place.
@@ -52,5 +62,13 @@ final class Place extends Model
 
         return $query->where('name', 'like', "%{$search}%")
             ->orWhere('postal_code', 'like', "%{$search}%");
+    }
+
+    /**
+     * Scope to filter places by team.
+     */
+    public function scopeForTeam($query, int $teamId)
+    {
+        return $query->where('team_id', $teamId);
     }
 }

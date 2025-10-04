@@ -6,6 +6,7 @@ namespace App\Gedcom\Import;
 
 use App\Models\Person;
 use App\Models\PersonMetadata;
+use App\Models\Place;
 use App\Models\Team;
 use Carbon\Carbon;
 use Exception;
@@ -44,19 +45,20 @@ class IndividualImporter
             $personData = $this->truncatePersonData($personData);
 
             $person = Person::create([
-                'firstname' => $personData['firstname'],
-                'surname'   => $personData['surname'] ?? '????',
-                'birthname' => $personData['birthname'],
-                'nickname'  => $personData['nickname'],
-                'sex'       => $personData['sex'],
-                'dob'       => $personData['dob'],
-                'yob'       => $personData['yob'],
-                'pob'       => $personData['pob'],
-                'dod'       => $personData['dod'],
-                'yod'       => $personData['yod'],
-                'pod'       => $personData['pod'],
-                'summary'   => $personData['summary'],
-                'team_id'   => $this->team->id,
+                'firstname'     => $personData['firstname'],
+                'surname'       => $personData['surname'] ?? '????',
+                'birthname'     => $personData['birthname'],
+                'nickname'      => $personData['nickname'],
+                'sex'           => $personData['sex'],
+                'dob'           => $personData['dob'],
+                'yob'           => $personData['yob'],
+                'pob'           => $personData['pob'],
+                'birthplace_id' => $personData['birthplace_id'],
+                'dod'           => $personData['dod'],
+                'yod'           => $personData['yod'],
+                'pod'           => $personData['pod'],
+                'summary'       => $personData['summary'],
+                'team_id'       => $this->team->id,
             ]);
 
             $this->personMap[$gedcomId] = $person->id;
@@ -93,19 +95,20 @@ class IndividualImporter
     private function extractPersonData(?array $individual): array
     {
         $data = [
-            'firstname' => null,
-            'surname'   => null,
-            'birthname' => null,
-            'nickname'  => null,
-            'sex'       => 'm',
-            'dob'       => null,
-            'yob'       => null,
-            'pob'       => null,
-            'dod'       => null,
-            'yod'       => null,
-            'pod'       => null,
-            'summary'   => null,
-            'metadata'  => [],
+            'firstname'     => null,
+            'surname'       => null,
+            'birthname'     => null,
+            'nickname'      => null,
+            'sex'           => 'm',
+            'dob'           => null,
+            'yob'           => null,
+            'pob'           => null,
+            'birthplace_id' => null,
+            'dod'           => null,
+            'yod'           => null,
+            'pod'           => null,
+            'summary'       => null,
+            'metadata'      => [],
         ];
 
         if ($individual === null || ! isset($individual['data'])) {
@@ -132,6 +135,16 @@ class IndividualImporter
                     $data['dob'] = $birthInfo['date'];
                     $data['yob'] = $birthInfo['year'];
                     $data['pob'] = $birthInfo['place'];
+                    
+                    // Create or find birthplace if we have place data
+                    if ($birthInfo['place']) {
+                        $data['birthplace_id'] = $this->findOrCreatePlace(
+                            $birthInfo['place'],
+                            $birthInfo['postal_code'] ?? null,
+                            $birthInfo['latitude'] ?? null,
+                            $birthInfo['longitude'] ?? null
+                        );
+                    }
                     break;
 
                 case 'DEAT':
@@ -300,7 +313,14 @@ class IndividualImporter
      */
     private function extractEvent(array $eventField): array
     {
-        $result = ['date' => null, 'year' => null, 'place' => null];
+        $result = [
+            'date'        => null,
+            'year'        => null,
+            'place'       => null,
+            'postal_code' => null,
+            'latitude'    => null,
+            'longitude'   => null,
+        ];
 
         if (isset($eventField['data'])) {
             foreach ($eventField['data'] as $subField) {
@@ -313,6 +333,30 @@ class IndividualImporter
 
                     case 'PLAC':
                         $result['place'] = $subField['value'];
+                        
+                        // Parse sub-fields of PLAC (POST, MAP, etc.)
+                        if (isset($subField['data']) && is_array($subField['data'])) {
+                            foreach ($subField['data'] as $placSubField) {
+                                switch ($placSubField['tag']) {
+                                    case 'POST':
+                                        $result['postal_code'] = $placSubField['value'];
+                                        break;
+                                        
+                                    case 'MAP':
+                                        if (isset($placSubField['data']) && is_array($placSubField['data'])) {
+                                            foreach ($placSubField['data'] as $mapField) {
+                                                if ($mapField['tag'] === 'LATI') {
+                                                    $result['latitude'] = $mapField['value'];
+                                                }
+                                                if ($mapField['tag'] === 'LONG') {
+                                                    $result['longitude'] = $mapField['value'];
+                                                }
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                        }
                         break;
                 }
             }
@@ -399,5 +443,74 @@ class IndividualImporter
         }
 
         return $personData;
+    }
+
+    /**
+     * Find existing place or create a new one for the current team
+     */
+    private function findOrCreatePlace(
+        string $name,
+        ?string $postalCode = null,
+        ?string $latitude = null,
+        ?string $longitude = null
+    ): ?int {
+        // Truncate name if too long
+        $name = mb_substr($name, 0, 255);
+        
+        // Try to find existing place by team, name and postal code
+        $place = Place::where('team_id', $this->team->id)
+            ->where('name', $name)
+            ->where('postal_code', $postalCode)
+            ->first();
+
+        if ($place) {
+            // Update coordinates if they're missing and we have new ones
+            $needsUpdate = false;
+            
+            if (! $place->latitude && $latitude) {
+                $place->latitude = $latitude;
+                $needsUpdate = true;
+            }
+            
+            if (! $place->longitude && $longitude) {
+                $place->longitude = $longitude;
+                $needsUpdate = true;
+            }
+            
+            if ($needsUpdate) {
+                $place->save();
+            }
+            
+            return $place->id;
+        }
+
+        // Create new place for this team
+        try {
+            $place = Place::create([
+                'team_id'     => $this->team->id,
+                'name'        => $name,
+                'postal_code' => $postalCode ? mb_substr($postalCode, 0, 20) : null,
+                'latitude'    => $latitude,
+                'longitude'   => $longitude,
+            ]);
+
+            Log::info('GEDCOM Import: Created new place', [
+                'team_id'     => $this->team->id,
+                'name'        => $name,
+                'postal_code' => $postalCode,
+                'latitude'    => $latitude,
+                'longitude'   => $longitude,
+            ]);
+
+            return $place->id;
+        } catch (Exception $e) {
+            Log::error('GEDCOM Import: Failed to create place', [
+                'team_id' => $this->team->id,
+                'name'    => $name,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 }
