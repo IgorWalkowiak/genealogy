@@ -1,4 +1,28 @@
 <div class="w-full">
+    {{-- Pasek postępu geokodowania --}}
+    <div id="geocoding-progress-bar" class="mb-6 bg-white dark:bg-neutral-700 rounded-lg shadow p-4 hidden">
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <h3 class="text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                    Ładowanie mapy
+                </h3>
+                <p id="geocoding-status" class="text-sm text-neutral-600 dark:text-neutral-400">
+                    Przygotowywanie...
+                </p>
+            </div>
+            <div class="text-right">
+                <div id="geocoding-percentage" class="text-2xl font-bold text-primary-600 dark:text-primary-400">0%</div>
+                <div id="geocoding-count" class="text-xs text-neutral-500 dark:text-neutral-400">0 / 0</div>
+            </div>
+        </div>
+        <div class="w-full bg-neutral-200 dark:bg-neutral-600 rounded-full h-3 overflow-hidden">
+            <div id="geocoding-progress-fill" class="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+        <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400 text-center">
+            💡 Geokodowanie trwa około 1 sekundy na miejsce (limit API). Współrzędne zostaną zapisane i następne ładowanie będzie szybkie!
+        </div>
+    </div>
+
     {{-- Informacje o statystykach --}}
     <div class="mb-6 p-4 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="flex justify-between items-center mb-4">
@@ -26,7 +50,7 @@
 
     {{-- Mapa --}}
     <div class="mb-6 bg-white dark:bg-neutral-700 rounded-lg shadow overflow-hidden relative">
-        <div id="birthplaces-map" style="width: 100%; height: 600px;"></div>
+        <div id="birthplaces-map" style="width: 100%; height: 720px;"></div>
         
         {{-- Wskaźnik ładowania --}}
         <div id="loading-indicator" class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-neutral-700 bg-opacity-90 dark:bg-opacity-90 z-10">
@@ -299,14 +323,34 @@ document.addEventListener('DOMContentLoaded', function() {
     async function addMarkers() {
         const loadingIndicator = document.getElementById('loading-indicator');
         const loadingProgress = document.getElementById('loading-progress');
+        const progressBar = document.getElementById('geocoding-progress-bar');
+        const progressFill = document.getElementById('geocoding-progress-fill');
+        const progressStatus = document.getElementById('geocoding-status');
+        const progressPercentage = document.getElementById('geocoding-percentage');
+        const progressCount = document.getElementById('geocoding-count');
+        
         let successCount = 0;
         let failedPlaces = [];
         
+        // Pokaż pasek postępu
+        if (birthplaces.length > 0) {
+            progressBar.classList.remove('hidden');
+            progressCount.textContent = `0 / ${birthplaces.length}`;
+        }
+        
         for (let i = 0; i < birthplaces.length; i++) {
             const place = birthplaces[i];
+            const currentNum = i + 1;
+            const percentage = Math.round((currentNum / birthplaces.length) * 100);
             
-            // Aktualizuj wskaźnik postępu
-            loadingProgress.textContent = `Geokodowanie ${i + 1} z ${birthplaces.length}: ${place.place}`;
+            // Aktualizuj wskaźnik postępu na pasku górnym
+            progressFill.style.width = `${percentage}%`;
+            progressPercentage.textContent = `${percentage}%`;
+            progressCount.textContent = `${currentNum} / ${birthplaces.length}`;
+            progressStatus.textContent = `Przetwarzanie: ${place.place}`;
+            
+            // Aktualizuj wskaźnik postępu na mapie (stary)
+            loadingProgress.textContent = `Geokodowanie ${currentNum} z ${birthplaces.length}: ${place.place}`;
             
             let coords = null;
             
@@ -321,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 successCount++;
             } else {
                 // W przeciwnym razie geokoduj
+                progressStatus.textContent = `🌍 Geokodowanie: ${place.place}${place.postal_code ? ' (' + place.postal_code + ')' : ''}`;
                 await new Promise(resolve => setTimeout(resolve, 1100));
                 const searchInfo = place.postal_code ? `${place.place} (${place.postal_code})` : place.place;
                 console.log(`Geokodowanie: ${searchInfo}...`);
@@ -382,6 +427,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Ukryj wskaźnik ładowania
         loadingIndicator.style.display = 'none';
+        
+        // Zaktualizuj pasek postępu na "Gotowe"
+        progressStatus.textContent = `✅ Gotowe! Załadowano ${successCount} z ${birthplaces.length} miejsc`;
+        progressFill.style.width = '100%';
+        progressPercentage.textContent = '100%';
+        
+        // Ukryj pasek postępu po 3 sekundach
+        setTimeout(() => {
+            progressBar.classList.add('hidden');
+        }, 3000);
         
         // Pokaż podsumowanie
         console.log(`\n📊 Podsumowanie geokodowania:`);
