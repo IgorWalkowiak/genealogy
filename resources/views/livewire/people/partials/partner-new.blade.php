@@ -44,8 +44,10 @@
 
             {{-- dob --}}
             <div class="col-span-6 md:col-span-3">
-                <x-ts-date wire:model="form.dob" id="dob" label="{{ __('person.dob') }} :" format="YYYY-MM-DD" :max-date="now()"
-                    placeholder="{{ __('app.select') }} ..." />
+                <x-ts-input wire:model="form.dob" id="dob" label="{{ __('person.dob') }} :" 
+                    placeholder="RRRR-MM-DD" 
+                    x-mask="9999-99-99"
+                    hint="Format: RRRR-MM-DD (np. 1950-12-25)" />
             </div>
 
             {{-- birthplace_id --}}
@@ -74,14 +76,18 @@
         <div class="grid grid-cols-6 gap-5">
             {{-- date_start --}}
             <div class="col-span-3">
-                <x-ts-date wire:model="date_start" id="date_start" label="{{ __('couple.date_start') }} :" format="YYYY-MM-DD"
-                    :max-date="now()" placeholder="{{ __('app.select') }} ..." />
+                <x-ts-input wire:model="date_start" id="date_start" label="{{ __('couple.date_start') }} :" 
+                    placeholder="RRRR-MM-DD" 
+                    x-mask="9999-99-99"
+                    hint="Format: RRRR-MM-DD" />
             </div>
 
             {{-- date_end --}}
             <div class="col-span-3">
-                <x-ts-date wire:model="date_end" id="date_end" label="{{ __('couple.date_end') }} :" format="YYYY-MM-DD" :max-date="now()"
-                    placeholder="{{ __('app.select') }} ..." />
+                <x-ts-input wire:model="date_end" id="date_end" label="{{ __('couple.date_end') }} :" 
+                    placeholder="RRRR-MM-DD" 
+                    x-mask="9999-99-99"
+                    hint="Format: RRRR-MM-DD" />
             </div>
 
             {{-- is_married --}}

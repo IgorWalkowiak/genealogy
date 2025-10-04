@@ -35,13 +35,6 @@
                                     </x-ts-dropdown.items>
                                 </a>
 
-                                <a href="/people/{{ $person->id }}/edit-death">
-                                    <x-ts-dropdown.items>
-                                        <x-ts-icon icon="tabler.grave-2" class="inline-block size-5 mr-2" />
-                                        {{ __('person.edit_death') }}
-                                    </x-ts-dropdown.items>
-                                </a>
-
                                 <hr />
                                 <a href="/people/{{ $person->id }}/edit-photos">
                                     <x-ts-dropdown.items>
@@ -123,7 +116,10 @@
 
                 {{-- dob --}}
                 <div class="col-span-6 md:col-span-3">
-                    <x-ts-date wire:model="dob" id="dob" label="{{ __('person.dob') }} :" format="YYYY-MM-DD" :max-date="now()" placeholder="{{ __('app.select') }} ..." />
+                    <x-ts-input wire:model="dob" id="dob" label="{{ __('person.dob') }} :" 
+                        placeholder="RRRR-MM-DD" 
+                        x-mask="9999-99-99"
+                        hint="Format: RRRR-MM-DD (np. 1950-12-25)" />
                 </div>
 
                 {{-- birthplace_id --}}
@@ -143,6 +139,72 @@
                 {{-- summary --}}
                 <div class="col-span-6">
                     <x-ts-textarea wire:model="summary" id="summary" label="{{ __('person.summary') }} :" maxlength="65535" count />
+                </div>
+
+                <x-hr.narrow class="col-span-6 my-0!" />
+
+                {{-- Death section header --}}
+                <div class="col-span-6">
+                    <h4 class="text-lg font-medium text-neutral-800 dark:text-neutral-200">
+                        <x-ts-icon icon="tabler.grave-2" class="inline-block size-5 mr-2" />
+                        {{ __('person.death') }}
+                    </h4>
+                </div>
+
+                {{-- yod --}}
+                <div class="col-span-6 md:col-span-3">
+                    <x-ts-input wire:model="yod" id="yod" label="{{ __('person.yod') }} :" type="number" max="{{ date('Y') }}" />
+                </div>
+
+                {{-- dod --}}
+                <div class="col-span-6 md:col-span-3">
+                    <x-ts-input wire:model="dod" id="dod" label="{{ __('person.dod') }} :" 
+                        placeholder="RRRR-MM-DD" 
+                        x-mask="9999-99-99"
+                        hint="Format: RRRR-MM-DD (np. 2020-06-15)" />
+                </div>
+
+                {{-- pod --}}
+                <div class="col-span-6">
+                    <x-ts-input wire:model="pod" id="pod" label="{{ __('person.pod') }} :" />
+                </div>
+
+                <x-hr.narrow class="col-span-6 my-0!" />
+
+                {{-- Cemetery location header --}}
+                <div class="col-span-5">
+                    <h4 class="text-lg font-medium text-neutral-800 dark:text-neutral-200">{{ __('person.cemetery_location') }}</h4>
+                </div>
+
+                {{-- show on google maps button --}}
+                <div class="col-span-1 text-end">
+                    @if ($person->cemetery_google)
+                        <a target="_blank" href="{{ $person->cemetery_google }}">
+                            <x-ts-button color="cyan" class="p-2! mb-2 text-white" title="{{ __('app.show_on_google_maps') }}">
+                                <x-ts-icon icon="tabler.brand-google-maps" class="inline-block size-5" />
+                            </x-ts-button>
+                        </a>
+                    @endif
+                </div>
+
+                {{-- cemetery_location_name --}}
+                <div class="col-span-6">
+                    <x-ts-input wire:model="cemetery_location_name" id="cemetery_location_name" label="{{ __('metadata.location_name') }} :" />
+                </div>
+
+                {{-- cemetery_location_address --}}
+                <div class="col-span-6">
+                    <x-ts-textarea wire:model="cemetery_location_address" id="cemetery_location_address" label="{{ __('metadata.address') }} :" resize-auto />
+                </div>
+
+                {{-- cemetery_location_latitude --}}
+                <div class="col-span-6 md:col-span-3">
+                    <x-ts-input wire:model="cemetery_location_latitude" id="cemetery_location_latitude" label="{{ __('metadata.latitude') }} :" />
+                </div>
+
+                {{-- cemetery_location_longitude --}}
+                <div class="col-span-6 md:col-span-3">
+                    <x-ts-input wire:model="cemetery_location_longitude" id="cemetery_location_longitude" label="{{ __('metadata.longitude') }} :" />
                 </div>
             </div>
         </form>

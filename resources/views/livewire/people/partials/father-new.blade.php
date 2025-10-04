@@ -42,8 +42,10 @@
 
             {{-- dob --}}
             <div class="col-span-6 md:col-span-3">
-                <x-ts-date wire:model="form.dob" id="dob" label="{{ __('person.dob') }} :" format="YYYY-MM-DD" :max-date="now()"
-                    placeholder="{{ __('app.select') }} ..." />
+                <x-ts-input wire:model="form.dob" id="dob" label="{{ __('person.dob') }} :" 
+                    placeholder="RRRR-MM-DD" 
+                    x-mask="9999-99-99"
+                    hint="Format: RRRR-MM-DD (np. 1950-12-25)" />
             </div>
 
             {{-- birthplace_id --}}

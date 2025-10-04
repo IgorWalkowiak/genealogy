@@ -23,7 +23,10 @@
 
         {{-- source_date --}}
         <div class="mb-3">
-            <x-ts-date wire:model="source_date" id="source_date" label="{{ __('person.source_date') }} :" format="YYYY-MM-DD" :max-date="now()" placeholder="{{ __('person.source_date_hint') }} ..." />
+            <x-ts-input wire:model="source_date" id="source_date" label="{{ __('person.source_date') }} :" 
+                placeholder="RRRR-MM-DD" 
+                x-mask="9999-99-99"
+                hint="{{ __('person.source_date_hint') }}" />
         </div>
 
         <x-hr.narrow class="my-2" />

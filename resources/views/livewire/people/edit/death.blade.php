@@ -25,8 +25,10 @@
 
                 {{-- dod --}}
                 <div class="col-span-3">
-                    <x-ts-date wire:model="dod" id="dod" label="{{ __('person.dod') }} :" format="YYYY-MM-DD" :max-date="now()"
-                        placeholder="{{ __('app.select') }} ..." />
+                    <x-ts-input wire:model="dod" id="dod" label="{{ __('person.dod') }} :" 
+                        placeholder="RRRR-MM-DD" 
+                        x-mask="9999-99-99"
+                        hint="Format: RRRR-MM-DD (np. 2020-06-15)" />
                 </div>
 
                 {{-- pod --}}

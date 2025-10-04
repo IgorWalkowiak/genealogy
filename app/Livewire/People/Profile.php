@@ -9,7 +9,9 @@ use App\Models\Gender;
 use App\Models\Person;
 use App\Models\Place;
 use App\Rules\DobValid;
+use App\Rules\DodValid;
 use App\Rules\YobValid;
+use App\Rules\YodValid;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -46,6 +48,19 @@ final class Profile extends Component
     public $pob = null;
     public $birthplace_id = null;
     public $summary = null;
+
+    // Death fields
+    #[Validate]
+    public $yod = null;
+
+    #[Validate]
+    public $dod = null;
+
+    public $pod = null;
+    public $cemetery_location_name = null;
+    public $cemetery_location_address = null;
+    public $cemetery_location_latitude = null;
+    public $cemetery_location_longitude = null;
 
     // -----------------------------------------------------------------------
     protected $listeners = [
@@ -101,7 +116,30 @@ final class Profile extends Component
 
         $validated = $this->validate();
 
-        $this->person->update($validated);
+        // Update basic person fields
+        $this->person->update([
+            'firstname' => $validated['firstname'] ?? null,
+            'surname' => $validated['surname'],
+            'birthname' => $validated['birthname'] ?? null,
+            'nickname' => $validated['nickname'] ?? null,
+            'sex' => $validated['sex'],
+            'gender_id' => $validated['gender_id'] ?? null,
+            'yob' => $validated['yob'] ?? null,
+            'dob' => $validated['dob'] ?? null,
+            'pob' => $validated['pob'] ?? null,
+            'birthplace_id' => $validated['birthplace_id'] ?? null,
+            'summary' => $validated['summary'] ?? null,
+            'yod' => $validated['yod'] ?? null,
+            'dod' => $validated['dod'] ?? null,
+            'pod' => $validated['pod'] ?? null,
+        ]);
+
+        // Update or create metadata for cemetery location
+        $this->person->updateMetadata(
+            collect($validated)
+                ->only(['cemetery_location_name', 'cemetery_location_address', 'cemetery_location_latitude', 'cemetery_location_longitude'])
+                ->filter(fn ($value, $key): bool => $value !== $this->person->getMetadataValue($key))
+        );
 
         $this->toast()->success(__('app.save'), __('app.saved'))->send();
 
@@ -173,6 +211,26 @@ final class Profile extends Component
             'birthplace_id' => ['nullable', 'integer', 'exists:places,id'],
 
             'summary' => ['nullable', 'string', 'max:65535'],
+
+            // Death fields
+            'yod' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:' . date('Y'),
+                new YodValid,
+            ],
+            'dod' => [
+                'nullable',
+                'date_format:Y-m-d',
+                'before_or_equal:today',
+                new DodValid,
+            ],
+            'pod' => ['nullable', 'string', 'max:255'],
+            'cemetery_location_name' => ['nullable', 'string', 'max:255'],
+            'cemetery_location_address' => ['nullable', 'string', 'max:255'],
+            'cemetery_location_latitude' => ['nullable', 'numeric', 'decimal:0,13', 'min:-90', 'max:90', 'required_with:cemetery_location_longitude'],
+            'cemetery_location_longitude' => ['nullable', 'numeric', 'decimal:0,13', 'min:-180', 'max:180', 'required_with:cemetery_location_latitude'],
         ];
     }
 
@@ -197,6 +255,15 @@ final class Profile extends Component
             'pob' => __('person.pob'),
 
             'summary' => __('person.summary'),
+
+            // Death attributes
+            'yod' => __('person.yod'),
+            'dod' => __('person.dod'),
+            'pod' => __('person.pod'),
+            'cemetery_location_name' => __('metadata.location_name'),
+            'cemetery_location_address' => __('metadata.address'),
+            'cemetery_location_latitude' => __('metadata.latitude'),
+            'cemetery_location_longitude' => __('metadata.longitude'),
         ];
     }
 
@@ -214,6 +281,15 @@ final class Profile extends Component
         $this->pob       = $this->person->pob;
         $this->birthplace_id = $this->person->birthplace_id;
         $this->summary   = $this->person->summary;
+
+        // Load death data
+        $this->yod = $this->person->yod ?? null;
+        $this->dod = $this->person->dod ? Carbon::parse($this->person->dod)->format('Y-m-d') : null;
+        $this->pod = $this->person->pod;
+        $this->cemetery_location_name = $this->person->getMetadataValue('cemetery_location_name');
+        $this->cemetery_location_address = $this->person->getMetadataValue('cemetery_location_address');
+        $this->cemetery_location_latitude = $this->person->getMetadataValue('cemetery_location_latitude');
+        $this->cemetery_location_longitude = $this->person->getMetadataValue('cemetery_location_longitude');
     }
 
     private function deletePersonPhotos(): void
