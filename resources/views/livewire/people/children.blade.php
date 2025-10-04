@@ -57,7 +57,7 @@
                                     </span>
                                     <x-ts-icon icon="tabler.{{ $child->sex === 'm' ? 'gender-male' : 'gender-female' }}" class="inline-block size-5" />
                                 </div>
-                                <x-ts-button wire:click="confirm({{ $child->id }})" color="red" class="text-xs">
+                                <x-ts-button wire:click="disconnect({{ $child->id }})" color="red" class="text-xs">
                                     <x-ts-icon icon="tabler.plug-connected-x" class="inline-block size-4" />
                                     {{ __('app.disconnect') }}
                                 </x-ts-button>
@@ -71,7 +71,7 @@
             <div class="mt-4">
                 <h4 class="font-medium mb-2">{{ __('person.add_existing_person_as_child') }}:</h4>
                 
-                @if ($availablePersons->isEmpty())
+                @if ($this->availablePersons->isEmpty())
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         {{ __('app.nothing_available') }}
                     </p>
@@ -83,7 +83,7 @@
                     </a>
                 @else
                     <div class="space-y-2">
-                        <x-ts-select.styled wire:model.live="selected_persons" id="selected_persons" :options="$availablePersons"
+                        <x-ts-select.styled wire:model="selected_persons" id="selected_persons" :options="$this->availablePersons"
                             select="label:name|value:id" placeholder="{{ __('app.select') }} ..." searchable multiple />
                         
                         {{-- DEBUG: selected_persons = {{ json_encode($selected_persons) }} --}}
